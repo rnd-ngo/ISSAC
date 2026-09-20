@@ -6,7 +6,7 @@ import issac.document.DocRead;
 
 public class ISSAC {
 
-     static void main(String[] args) throws IOException {
+     public static void main(String[] args) throws IOException {
 
         DocRead reader = new DocRead();
         reader.readDoc("src/test_documents/tests.txt");
