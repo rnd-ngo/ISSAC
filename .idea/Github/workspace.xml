@@ -1,26 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="4b2ce60c-c15e-41c4-bca4-2919d852f083" name="Changes" comment="skeletons">
-      <change afterPath="$PROJECT_DIR$/src/main/java/issac/docuemnt/DocRead.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/Github/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/Github/.gitignore" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/Github/ISSAC.iml" beforeDir="false" afterPath="$PROJECT_DIR$/Github/ISSAC.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/Github/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/Github/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/Github/modules.xml" beforeDir="false" afterPath="$PROJECT_DIR$/Github/modules.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/Github/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/Github/vcs.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/Main/ISSAC.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/issac/ISSAC.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/Main/IntelligeneceRequirements/IR" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/issac/docuemnt/readable" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/Main/IntelligeneceRequirements/PIR" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/Main/IntelligeneceRequirements/SOR" beforeDir="false" afterPath="$PROJECT_DIR$/src/test_documents/tests.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/Main/IntelligeneceRequirements/SpecificOrderandRequirements.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/Main/IntelligeneceRequirements/StructuredAnalyticTechnique.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/Main/ReportAnalytics/AnalysisCompiler/Process.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/Main/ReportAnalytics/AnalysisCompiler/Product.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/Main/ReportAnalytics/Document/Collection.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/Main/ReportAnalytics/Document/DocuemntReader/DocuementEnchancer.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/Main/ReportAnalytics/Document/DocuemntReader/DocuemntStorage" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/Main/ReportAnalytics/Document/DocuemntReader/DocumentRead.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/Main/ReportAnalytics/Document/TestCases.java" beforeDir="false" />
+    <list default="true" id="4b2ce60c-c15e-41c4-bca4-2919d852f083" name="Changes" comment="edit">
+      <change beforePath="$PROJECT_DIR$/.idea/Github/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/Github/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/issac/ISSAC.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/issac/ISSAC.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/issac/docuemnt/DocRead.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/issac/documnt/DocRead.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/issac/docuemnt/readable" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/issac/documnt/readable" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -105,9 +90,21 @@
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
   </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="Update README.md" />
     <MESSAGE value="skeletons" />
-    <option name="LAST_COMMIT_MESSAGE" value="skeletons" />
+    <MESSAGE value="edit" />
+    <option name="LAST_COMMIT_MESSAGE" value="edit" />
   </component>
 </project>
