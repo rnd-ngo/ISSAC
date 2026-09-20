@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="4b2ce60c-c15e-41c4-bca4-2919d852f083" name="Changes" comment="skeletons">
+      <change afterPath="$PROJECT_DIR$/src/main/java/issac/docuemnt/DocRead.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/Github/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/Github/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/Github/ISSAC.iml" beforeDir="false" afterPath="$PROJECT_DIR$/Github/ISSAC.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/Github/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/Github/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/Github/modules.xml" beforeDir="false" afterPath="$PROJECT_DIR$/Github/modules.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/Github/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/Github/vcs.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/Main/ISSAC.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/issac/ISSAC.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/Main/IntelligeneceRequirements/IR" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/issac/docuemnt/readable" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/Main/IntelligeneceRequirements/PIR" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/Main/IntelligeneceRequirements/SOR" beforeDir="false" afterPath="$PROJECT_DIR$/src/test_documents/tests.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/Main/IntelligeneceRequirements/SpecificOrderandRequirements.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/Main/IntelligeneceRequirements/StructuredAnalyticTechnique.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/Main/ReportAnalytics/AnalysisCompiler/Process.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/Main/ReportAnalytics/AnalysisCompiler/Product.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/Main/ReportAnalytics/Document/Collection.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/Main/ReportAnalytics/Document/DocuemntReader/DocuementEnchancer.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/Main/ReportAnalytics/Document/DocuemntReader/DocuemntStorage" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/Main/ReportAnalytics/Document/DocuemntReader/DocumentRead.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/Main/ReportAnalytics/Document/TestCases.java" beforeDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="JavaScript File" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;rnd-ngo&quot;
+  }
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/rnd-ngo/ISSAC.git&quot;,
+    &quot;accountId&quot;: &quot;60c6037e-4411-4e92-8fcb-3e2df88cfef0&quot;
+  }
+}</component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 6,
+  &quot;fromUser&quot;: false
+}</component>
+  <component name="ProjectId" id="3J4R4QkgcWML0plKGGwmmoYwAhF" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
+    "codeWithMe.voiceChat.enabledByDefault": "false",
+    "git-widget-placeholder": "main",
+    "ignore.virus.scanning.warn.message": "true",
+    "kotlin-language-version-configured": "true",
+    "node.js.detected.package.jshint": "true",
+    "node.js.selected.package.jshint": "",
+    "nodejs_package_manager_path": "npm",
+    "project.structure.last.edited": "Project",
+    "project.structure.proportion": "0.15",
+    "project.structure.side.proportion": "0.0"
+  }
+}]]></component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\rndng\IdeaProjects\ISSAC\src\main\java\issac" />
+      <recent name="C:\Users\rndng\IdeaProjects\ISSAC" />
+      <recent name="C:\Users\rndng\IdeaProjects\ISSAC\.idea\Main\IntelligeneceRequirements" />
+      <recent name="C:\Users\rndng\IdeaProjects\ISSAC\.idea\Main\ReportAnalytics" />
+      <recent name="C:\Users\rndng\IdeaProjects\ISSAC\.idea\Main" />
+    </key>
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-jdk-30f59d01ecdd-a203e0a19954-intellij.indexing.shared.core-IU-262.10315.125" />
+        <option value="bundled-js-predefined-d6986cc7102b-4abd2a77f808-JavaScript-IU-262.10315.125" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="4b2ce60c-c15e-41c4-bca4-2919d852f083" name="Changes" comment="" />
+      <created>1788918185481</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1788918185481</updated>
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="Update README.md" />
+    <MESSAGE value="skeletons" />
+    <option name="LAST_COMMIT_MESSAGE" value="skeletons" />
+  </component>
+</project>
