@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/Github/ISSAC.iml" filepath="$PROJECT_DIR$/Github/ISSAC.iml" />
+      <module fileurl="file://$PROJECT_DIR$/ISSAC.iml" filepath="$PROJECT_DIR$/ISSAC.iml" />
     </modules>
   </component>
 </project>

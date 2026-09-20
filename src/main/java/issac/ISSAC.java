@@ -6,12 +6,12 @@ import issac.document.DocRead;
 
 public class ISSAC {
 
-    public static void main(String[] args) throws IOEception {
+     static void main(String[] args) throws IOException {
 
         DocRead reader = new DocRead();
-        reader.readDoc("src/test_documnets/tests.txt");
+        reader.readDoc("src/test_documents/tests.txt");
 
-        System.out.println("Documenet processed.");
+        System.out.println("Document processed.");
 
     }
 

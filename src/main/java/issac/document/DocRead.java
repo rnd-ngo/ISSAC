@@ -1,4 +1,4 @@
-// Reads the docuement and identifies the file type.
+// Reads the document and identifies the file type.
 // Stores the document in "readable"
 package issac.document;
 
