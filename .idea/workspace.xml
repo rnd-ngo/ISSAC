@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="c4c40d45-a691-42d8-a0f4-a73c94aaba6b" name="Changes" comment="Refine">
+    <list default="true" id="c4c40d45-a691-42d8-a0f4-a73c94aaba6b" name="Changes" comment="Editted DocRead.java">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ISSAC/main/java/issac/ISSAC.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/ISSAC/main/java/issac/ISSAC.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ISSAC/main/java/issac/document/DocRead.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/ISSAC/main/java/issac/document/DocRead.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/readable.txt" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/issac/ISSAC.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/issac/ISSAC.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/issac/document/DocRead.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/issac/document/DocRead.java" afterDir="false" />
     </list>
@@ -25,6 +29,9 @@
     &quot;accountId&quot;: &quot;60c6037e-4411-4e92-8fcb-3e2df88cfef0&quot;
   }
 }</component>
+  <component name="ProblemsViewState">
+    <option name="selectedTabId" value="CurrentFile" />
+  </component>
   <component name="ProjectColorInfo">{
   &quot;customColor&quot;: &quot;&quot;,
   &quot;associatedIndex&quot;: 6
@@ -72,7 +79,8 @@
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="Refine" />
-    <option name="LAST_COMMIT_MESSAGE" value="Refine" />
+    <MESSAGE value="Editted DocRead.java" />
+    <option name="LAST_COMMIT_MESSAGE" value="Editted DocRead.java" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />

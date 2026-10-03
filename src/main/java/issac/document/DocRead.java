@@ -14,24 +14,28 @@ public class DocRead {
 
     public void readDoc(String filePath, String saveAs) throws IOException {
 
-        String fileName = saveAs.toLowerCase(); // Lowercases letters
-        fileName = fileName.replace(" ","_"); // Replaces " " with "_" to make it more file-like
-        fileName = fileName.replaceAll("[^a-z0-9]",""); // Replace special characters
+        String fileName = convertName(saveAs);
 
         Path output = Path.of(fileName + ".txt"); // Housing of Content
         Path path = Path.of(filePath); // File location
         String content = Files.readString(path); // Reads content
 
         Files.writeString(output,content); // Writes into readable
-        documents.put(saveAs, output); // Store document into a List
+        documents.put(fileName, output); // Store document into a Map
 
-        System.out.println("Success ful upload of File : " + saveAs + ". Document name : " + fileName);
+        System.out.println("Success ful upload of File : " + saveAs + ".\nDocument name : " + fileName + ".txt");
 
+    }
+
+    private String convertName(String name) {
+        String fileName = name.toLowerCase(); // Lowercases letters
+        fileName = fileName.replaceAll("[^a-z0-9_]",""); // Replace special characters
+        return fileName;
     }
 
     public boolean isUploaded(String docName) {
 
-        boolean uploaded = documents.containsKey(docName);
+        boolean uploaded = documents.containsKey(convertName(docName));
 
         if (uploaded) {
             System.out.println(docName + " has already been Uploaded");
@@ -48,11 +52,11 @@ public class DocRead {
     }
 
     public void docDelete(String docName) throws IOException {
-        Path document = documents.remove(docName);
+        Path document = documents.remove(convertName(docName));
 
         if (document != null) {
             Files.delete(document);
-            documents.remove(docName);
+            System.out.println("Successfully Deleted " + convertName(docName));
         }
     }
 
