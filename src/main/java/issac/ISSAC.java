@@ -1,16 +1,20 @@
 // Starts up the application in addition acts as a central hub
-package issac;
+package main.java.issac;
+
+import main.java.issac.document.DocRead;
 
 import java.io.IOException;
-import issac.document.DocRead;
 
 public class ISSAC {
 
      public static void main(String[] args) throws IOException {
 
         DocRead reader = new DocRead();
-        reader.readDoc("src/test_documents/tests.txt");
+        reader.readDoc("src/test_documents/tests.txt", "document1");
 
+        String content = reader.readReadable();
+
+        System.out.println(content);
         System.out.println("Document processed.");
 
     }
