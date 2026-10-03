@@ -1,7 +1,7 @@
 // Starts up the application in addition acts as a central hub
-package main.java.issac;
+package issac;
 
-import main.java.issac.document.DocRead;
+import issac.document.DocRead;
 
 import java.io.IOException;
 
