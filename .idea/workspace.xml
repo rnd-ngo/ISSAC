@@ -1,18 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="c4c40d45-a691-42d8-a0f4-a73c94aaba6b" name="Changes" comment="Editted DocRead.java">
+    <list default="true" id="c4c40d45-a691-42d8-a0f4-a73c94aaba6b" name="Changes" comment="Adding tests">
+      <change afterPath="$PROJECT_DIR$/src/test_cases/test_documents/testsmore.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ISSAC.iml" beforeDir="false" afterPath="$PROJECT_DIR$/ISSAC.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/out/production/ISSAC/main/java/issac/ISSAC.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/ISSAC/main/java/issac/ISSAC.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/out/production/ISSAC/main/java/issac/document/DocRead.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/ISSAC/main/java/issac/document/DocRead.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/readable.txt" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/issac/ISSAC.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/issac/ISSAC.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/issac/document/DocRead.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/issac/document/DocRead.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test_cases/Tests.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test_cases/Tests.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Class" />
+      </list>
+    </option>
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -40,22 +49,25 @@
   <component name="ProjectViewState">
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;Application.ISSAC.executor&quot;: &quot;Run&quot;,
-    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
-    &quot;codeWithMe.voiceChat.enabledByDefault&quot;: &quot;false&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
-    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;project.structure.last.edited&quot;: &quot;Modules&quot;,
-    &quot;project.structure.proportion&quot;: &quot;0.15&quot;,
-    &quot;project.structure.side.proportion&quot;: &quot;0.2&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Application.ISSAC.executor": "Run",
+    "Application.Tests.executor": "Run",
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
+    "codeWithMe.voiceChat.enabledByDefault": "false",
+    "git-widget-placeholder": "main",
+    "kotlin-language-version-configured": "true",
+    "node.js.detected.package.jshint": "true",
+    "node.js.selected.package.jshint": "",
+    "nodejs_package_manager_path": "npm",
+    "project.structure.last.edited": "Modules",
+    "project.structure.proportion": "0.15",
+    "project.structure.side.proportion": "0.2",
+    "settings.editor.selected.configurable": "preferences.pluginManager"
   }
-}</component>
+}]]></component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
@@ -80,7 +92,19 @@
   <component name="VcsManagerConfiguration">
     <MESSAGE value="Refine" />
     <MESSAGE value="Editted DocRead.java" />
-    <option name="LAST_COMMIT_MESSAGE" value="Editted DocRead.java" />
+    <MESSAGE value="Adding tests" />
+    <option name="LAST_COMMIT_MESSAGE" value="Adding tests" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/test_cases/Tests.java</url>
+          <line>8</line>
+          <option name="timeStamp" value="3" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />

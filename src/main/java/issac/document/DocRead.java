@@ -15,6 +15,7 @@ public class DocRead {
     public void readDoc(String filePath, String saveAs) throws IOException {
 
         String fileName = convertName(saveAs);
+        System.out.println(fileName);
 
         Path output = Path.of(fileName + ".txt"); // Housing of Content
         Path path = Path.of(filePath); // File location
@@ -29,7 +30,8 @@ public class DocRead {
 
     private String convertName(String name) {
         String fileName = name.toLowerCase(); // Lowercases letters
-        fileName = fileName.replaceAll("[^a-z0-9_]",""); // Replace special characters
+        fileName = fileName.replace(" ","_"); // Need to refine these
+        fileName = fileName.replaceAll("[^a-z0-9_-]",""); // Replace special characters
         return fileName;
     }
 
