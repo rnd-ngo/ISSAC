@@ -12,7 +12,7 @@ public class ISSAC {
         DocRead reader = new DocRead();
         reader.readDoc("src/test_documents/tests.txt", "document1");
 
-        String content = reader.readReadable();
+        String content = reader.readFile();
 
         System.out.println(content);
         System.out.println("Document processed.");
