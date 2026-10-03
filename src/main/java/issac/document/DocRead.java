@@ -11,13 +11,14 @@ import java.util.Map;
 public class DocRead {
 
     private final Map<String,Path> documents = new HashMap<>();
+    private final Path documentsDirectory = Path.of("data", "documents");
 
     public void readDoc(String filePath, String saveAs) throws IOException {
 
         String fileName = convertName(saveAs);
         System.out.println(fileName);
 
-        Path output = Path.of(fileName + ".txt"); // Housing of Content
+        Path output = documentsDirectory.resolve(fileName + ".txt"); // Housing of Content
         Path path = Path.of(filePath); // File location
         String content = Files.readString(path); // Reads content
 
@@ -40,7 +41,7 @@ public class DocRead {
         boolean uploaded = documents.containsKey(convertName(docName));
 
         if (uploaded) {
-            System.out.println(docName + " has already been Uploaded");
+            System.out.println(docName + " has already been Uploaded as " + convertName(docName) + ".");
             return true;
         }
         System.out.println(docName + " does not exist. Check the file's name for any errors.");
@@ -49,7 +50,7 @@ public class DocRead {
 
     public String readFile(String fileName) throws IOException {
 
-        return Files.readString((Path.of(fileName + ".txt")));
+        return Files.readString((Path.of(convertName(fileName) + ".txt")));
 
     }
 
@@ -59,6 +60,9 @@ public class DocRead {
         if (document != null) {
             Files.delete(document);
             System.out.println("Successfully Deleted " + convertName(docName));
+        }
+        else {
+            System.out.println(convertName(docName) + " has already need deleted or does not exist.");
         }
     }
 
