@@ -3,14 +3,17 @@
 package issac.document;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
-
 import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
+import java.io.InputStream;
+import org.apache.poi.xwpf.usermodel.XWPFDocument;
+import org.apache.poi.xwpf.extractor.XWPFWordExtractor;
 
 public class DocRead {
 
@@ -29,7 +32,6 @@ public class DocRead {
                 return;
             }
             System.out.println("Overwriting...");
-            docDelete(saveAs);
         }
 
         String fileName = convertName(saveAs);
@@ -46,9 +48,11 @@ public class DocRead {
                 content = readPDF(path);
                 break;
             case "docx":
-
+                content = readDOCX(path);
+                break;
             default:
-
+                System.out.println("Unsupported File Type.");
+                return;
         }
         Files.writeString(output,content); // Writes into readable
         documents.put(fileName, output); // Store document into a Map
@@ -58,11 +62,18 @@ public class DocRead {
     }
 
     private String readPDF(Path path) throws IOException {
-        PDDocument document = Loader.loadPDF(path.toFile());
-        PDFTextStripper stripper = new PDFTextStripper();
-        String content = stripper.getText(document);
-        document.close();
-        return content;
+        try (PDDocument document = Loader.loadPDF(path.toFile())) {
+            PDFTextStripper stripper = new PDFTextStripper();
+            return stripper.getText(document);
+        }
+    }
+    private String readDOCX(Path path) throws IOException {
+        try (InputStream input = Files.newInputStream(path);
+             XWPFDocument document = new XWPFDocument(input);
+             XWPFWordExtractor extractor = new XWPFWordExtractor(document)
+        ) {
+            return extractor.getText();
+        }
     }
 
     private String getFileType(Path filePath) {

@@ -4,24 +4,16 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="c4c40d45-a691-42d8-a0f4-a73c94aaba6b" name="Changes" comment="Adding tests">
-      <change afterPath="$PROJECT_DIR$/.idea/compiler.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/jarRepositories.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/test_cases/test_documents/emptytest.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+    <list default="true" id="c4c40d45-a691-42d8-a0f4-a73c94aaba6b" name="Changes" comment="Adding tests, PDF scanner, File identifier">
+      <change afterPath="$PROJECT_DIR$/src/main/java/issac/ui/ISSACApplication.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/test_cases/test_documents/wrongtype.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ISSAC.iml" beforeDir="false" afterPath="$PROJECT_DIR$/ISSAC.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/ISSAC/main/java/issac/ISSAC.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/ISSAC/main/java/issac/document/DocRead.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/ISSAC/test_cases/test_documents/tests.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/ISSAC/test_cases/test_documents/testsmore.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/test/ISSAC/Tests.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/test/ISSAC/test_documents/tests.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/test/ISSAC/test_documents/testsmore.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/issac/ISSAC.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/issac/ISSAC.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/issac/document/DocRead.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/issac/document/DocRead.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/test_cases/Tests.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test_cases/Tests.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/issac/document/DocRead.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/issac/document/DocRead.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/test-classes/Tests.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/test-classes/Tests.class" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -31,8 +23,8 @@
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
-        <option value="Class" />
         <option value="package-info" />
+        <option value="Class" />
       </list>
     </option>
   </component>
@@ -113,22 +105,8 @@
     <MESSAGE value="Refine" />
     <MESSAGE value="Editted DocRead.java" />
     <MESSAGE value="Adding tests" />
-    <option name="LAST_COMMIT_MESSAGE" value="Adding tests" />
-  </component>
-  <component name="XDebuggerManager">
-    <breakpoint-manager>
-      <breakpoints>
-        <line-breakpoint enabled="true" type="java-method">
-          <url>file://$PROJECT_DIR$/src/test_cases/Tests.java</url>
-          <line>47</line>
-          <properties class="Tests" method="test4">
-            <option name="EMULATED" value="true" />
-            <option name="WATCH_EXIT" value="false" />
-          </properties>
-          <option name="timeStamp" value="5" />
-        </line-breakpoint>
-      </breakpoints>
-    </breakpoint-manager>
+    <MESSAGE value="Adding tests, PDF scanner, File identifier" />
+    <option name="LAST_COMMIT_MESSAGE" value="Adding tests, PDF scanner, File identifier" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />

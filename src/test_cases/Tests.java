@@ -1,14 +1,14 @@
 import issac.document.DocRead;
 
-import javax.print.Doc;
 import java.io.IOException;
 
 public class Tests {
+    public static String location = "src/test_cases/test_documents/";
     public static void main(String[] args) throws IOException {
 //        test1();
 //        test2();
 //        test3();
-        test4();
+        test5();
     }
     public static void test1() throws IOException {
         System.out.println("Starting Test");
@@ -55,6 +55,14 @@ public class Tests {
         content = reader.readFile("PdF Testing");
         System.out.println(content);
         //reader.docDelete("PDf tESTING");
+        System.out.println("End of Test");
+    }
+    public static void test5() throws IOException {
+        System.out.println("Starting Test");
+        String fileName = "Wrong F1l3 Type";
+        DocRead reader = new DocRead();
+        reader.readDoc(location + "wrongtype.png", fileName, true);
+        reader.isUploaded(fileName);
         System.out.println("End of Test");
     }
 }
