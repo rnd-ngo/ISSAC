@@ -11,7 +11,6 @@ import java.util.Map;
 import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
-import java.io.InputStream;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.apache.poi.xwpf.extractor.XWPFWordExtractor;
 
@@ -19,7 +18,6 @@ public class DocRead {
 
     private final Map<String,Path> documents = new HashMap<>();
     private final Path documentsDirectory = Path.of("src", "data", "documents");
-    private final Path uploadsDirectory = Path.of("src", "data", "uploads"); // Once it has been built all initial documents should go here
 
     public void readDoc(String filePath, String saveAs, boolean overWrite) throws IOException {
 
@@ -90,15 +88,7 @@ public class DocRead {
     }
 
     public boolean isUploaded(String docName) {
-
-        boolean uploaded = documents.containsKey(convertName(docName));
-
-        if (uploaded) {
-            System.out.println(docName + " has already been Uploaded as " + convertName(docName) + ".");
-            return true;
-        }
-        System.out.println("Error: " + docName + " does not exist. Check the file's name for any errors.");
-        return false;
+        return documents.containsKey(convertName(docName));
     }
 
     public String readFile(String fileName) throws IOException {
@@ -106,10 +96,11 @@ public class DocRead {
     }
 
     public void docDelete(String docName) throws IOException {
-        Path document = documents.remove(convertName(docName));
+        Path document = documents.get(convertName(docName));
 
         if (document != null) {
             Files.delete(document);
+            documents.remove(convertName(docName));
             System.out.println("Successfully Deleted " + convertName(docName));
         }
         else {

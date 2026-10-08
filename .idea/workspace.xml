@@ -4,16 +4,15 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="c4c40d45-a691-42d8-a0f4-a73c94aaba6b" name="Changes" comment="Adding tests, PDF scanner, File identifier">
-      <change afterPath="$PROJECT_DIR$/src/main/java/issac/ui/ISSACApplication.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/test_cases/test_documents/wrongtype.png" afterDir="false" />
+    <list default="true" id="c4c40d45-a691-42d8-a0f4-a73c94aaba6b" name="Changes" comment="Added UI and features">
+      <change afterPath="$PROJECT_DIR$/ROADMAP.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/issac/ai/AIModel.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/issac/ai/LocalModel.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/test_cases/ai_tests/LocalModelTest.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/issac/ISSAC.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/issac/ISSAC.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/issac/document/DocRead.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/issac/document/DocRead.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test_cases/Tests.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test_cases/Tests.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/issac/document/DocRead.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/issac/document/DocRead.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/test-classes/Tests.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/test-classes/Tests.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/issac/ui/ISSACApplication.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/issac/ui/ISSACApplication.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -57,6 +56,7 @@
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
     "Application.ISSAC.executor": "Run",
+    "Application.LocalModelTest.executor": "Run",
     "Application.Tests.executor": "Run",
     "ModuleVcsDetector.initialDetectionPerformed": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
@@ -106,7 +106,8 @@
     <MESSAGE value="Editted DocRead.java" />
     <MESSAGE value="Adding tests" />
     <MESSAGE value="Adding tests, PDF scanner, File identifier" />
-    <option name="LAST_COMMIT_MESSAGE" value="Adding tests, PDF scanner, File identifier" />
+    <MESSAGE value="Added UI and features" />
+    <option name="LAST_COMMIT_MESSAGE" value="Added UI and features" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />
