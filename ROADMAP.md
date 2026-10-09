@@ -39,7 +39,7 @@ Build the basic application and document-processing infrastructure.
 - [ ] Clean up `DocRead` edge cases
 - [ ] Improve UI error reporting
 - [ ] Validate document names
-- [ ] Restore existing documents into the registry on startup
+- [x] Restore existing documents into the registry on startup
 - [ ] Improve unsupported-file handling
 - [ ] Add delete confirmation
 
@@ -100,9 +100,9 @@ requiring the rest of ISSAC to be redesigned.
 - [x] Experiment with structured analysis instructions
 - [x] Identify limitations involving unsupported inferences and source accuracy
 - [ ] Support interactive questions about an uploaded document
-- [ ] Associate completed analyses with their source documents
-- [ ] Automatically display cached analyses when selecting documents
-- [ ] Save analyses to disk and restore them on startup
+- [x] Associate completed analyses with their source documents
+- [x] Automatically display cached analyses when selecting documents
+- [x] Save analyses to disk and restore them on startup
 - [ ] Invalidate cached analyses when documents are replaced or deleted
 - [ ] Disable repeated analysis requests while processing
 - [ ] Improve progress indicators and user-facing error messages
@@ -115,6 +115,25 @@ requiring the rest of ISSAC to be redesigned.
 - [ ] Restore the saved document registry when ISSAC starts
 - [ ] Validate extracted information against supporting source text
 - [ ] Distinguish document facts from AI inferences
+
+### Local Model Lifecycle
+
+- [x] Implement `ModelServer` using Java `ProcessBuilder`
+- [x] Launch llama.cpp automatically when ISSAC starts
+- [x] Successfully connect ISSAC to the automatically launched Qwen server
+- [ ] Verify llama.cpp terminates when ISSAC closes
+- [ ] Detect model readiness using the local `/health` endpoint
+- [ ] Prevent analysis requests until the model is ready
+- [ ] Handle startup failures and unexpected server termination
+
+### Session Management
+
+- [x] Design document and analysis cleanup methods
+- [x] Add Clear Session confirmation workflow
+- [ ] Verify Clear Session removes documents, uploads, analyses, and in-memory state
+- [ ] Verify session reset is blocked while analysis is running
+- [ ] Handle partial cleanup failures
+- [ ] Prevent active or stale analysis tasks from recreating deleted data
 
 ## Milestone
 
@@ -515,6 +534,12 @@ A future instance may resemble:
 - [ ] Create instance manifest
 - [ ] Develop auditing capabilities
 - [ ] Define backup/recovery strategy
+- [ ] Separate temporary session storage from explicitly retained products
+- [ ] Implement manual Clear Session and Safe Detach workflows
+- [ ] Support explicitly saving selected products for transfer
+- [ ] Verify cleanup before removable-device ejection
+- [ ] Define behavior for interrupted sessions and unexpected device removal
+- [ ] Investigate encryption and limitations of file deletion on flash storage
 
 Running ISSAC from removable storage should not by itself be considered a
 security boundary. The host operating system, runtime, memory, temporary
@@ -624,52 +649,42 @@ continue working on the current milestone.
 
 ## Current Objective
 
-Connect ISSAC's Java `AIModel` interface to its first local language model.
+Improve reliability, session cleanup, and document lifecycle management for ISSAC's working local-AI prototype.
 
 ## Last Completed
 
-- Created the `issac.ai` package.
-- Created the initial `AIModel` interface.
-- Established the conceptual separation between:
-    - ISSAC
-    - AI runtime
-    - AI model
-- Established portability as a core architectural requirement.
-- Identified future multimodal requirements including images, audio, and
-  video.
+- Integrated Qwen3.5-0.8B with ISSAC through llama.cpp and `LocalModel`.
+- Connected document ingestion to background AI analysis in JavaFX.
+- Associated analysis results with their source documents.
+- Implemented document recovery from saved files on application startup.
+- Implemented analysis persistence using `AnalysisStore`.
+- Successfully restored previously generated analyses after restarting ISSAC.
+- Implemented automatic startup of llama.cpp through `ModelServer`.
+- Added initial session-cleanup methods and Clear Session confirmation logic.
+- Began restricting concurrent analyses to avoid conflicting operations.
 
-## Next Step
+## Next Steps
 
-Evaluate and select a local AI runtime and local language model suitable for
-ISSAC's first prototype.
+1. Test Clear Session with disposable documents and confirm all intended session files are deleted.
+2. Verify cleanup cannot occur while an analysis is active.
+3. Verify `ModelServer` shuts down llama.cpp when ISSAC exits.
+4. Add model-readiness detection to prevent HTTP 503 errors during startup.
+5. Invalidate saved analyses when documents are overwritten or deleted.
+6. Improve partial-failure reporting and error handling.
+7. Revisit portable session storage and Safe Detach after the current cleanup workflow is reliable.
 
-The first AI milestone is:
+## Known Limitations
 
-    Java
-      |
-      v
-    AIModel
-      |
-      v
-    Local AI
-      |
-      v
-    Response returned to Java
+- A running llama.cpp process does not necessarily mean the model is ready.
+- Saved analyses may become stale if a document is replaced.
+- Session cleanup is not transactional and requires additional testing.
+- Ordinary file deletion does not guarantee secure erasure.
+- Unexpected termination or USB removal may leave temporary files behind.
+- Long documents may exceed the model's context window.
 
-Or, less formally:
+## Development Priority
 
-    "Hello ISSAC"
-          |
-          v
-       Java
-          |
-          v
-     Local Model
-          |
-          v
-    "Hello back."
-
-Once this works, connect `DocRead` output to the AI.
+Complete and verify the existing reliability features before introducing larger AI capabilities or portable deployment changes.
 
 ## Do Not Forget
 

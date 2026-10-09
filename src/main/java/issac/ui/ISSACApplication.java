@@ -11,7 +11,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import javafx.scene.control.TextInputDialog;
-
+import issac.analysis.AnalysisStore;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -23,17 +23,52 @@ import issac.ai.LocalModel;
 import javafx.concurrent.Task;
 import javafx.scene.control.TextArea;
 import javafx.scene.layout.HBox;
+import issac.ai.ModelServer;
 
 public class ISSACApplication extends Application {
 
     private final DocRead reader = new DocRead();
     private final ListView<String> documentList = new ListView<>();
+    private final AnalysisStore analysisStore = new AnalysisStore();
     private final LocalModel model = new LocalModel();
+    private final ModelServer modelServer = new ModelServer();
     private final TextArea analysisDisplay = new TextArea();
     private final Map<String, String> analyses = new HashMap<>();
+    private final Map<String, String> analysisErrors = new HashMap<>();
+    private boolean analysisRunning = false;
 
     @Override
     public void start(Stage primaryStage) {
+
+        try {
+            modelServer.startServer();
+        } catch (IOException e) {
+            System.err.println("Unable to start Qwen: " + e.getMessage());
+        }
+
+        try {
+            // Rebuild the document registry from files saved on disk.
+            reader.loadSavedDocuments();
+
+            // Add the recovered document names to our JavaFX ListView.
+            documentList.getItems().addAll(reader.getDocumentNames());
+
+            for (String documentName : reader.getDocumentNames()) {
+
+                if (analysisStore.hasAnalysis(documentName)) {
+
+                    String savedAnalysis =
+                            analysisStore.loadAnalysis(documentName);
+
+                    analyses.put(documentName, savedAnalysis);
+                }
+            }
+
+        } catch (IOException e) {
+            // Report a startup recovery problem without crashing ISSAC.
+            System.err.println("Failed to restore documents: " + e.getMessage());
+        }
+
         // Prevent users from accidentally modifying AI-generated analysis.
         analysisDisplay.setEditable(false);
 
@@ -48,7 +83,9 @@ public class ISSACApplication extends Application {
         Button uploadButton = new Button("Upload Document(s)");
         Button deleteButton = new Button("Delete Document(s)");
         Button analyzeButton = new Button("Analyze Document(s)");
+        Button clearButton = new Button("Clear Session");
 
+        clearButton.setOnAction(event -> confirmClearSession());
         uploadButton.setOnAction(event -> uploadFile(primaryStage));
         deleteButton.setOnAction(event -> deleteDocument());
         analyzeButton.setOnAction(event -> analyzeDocument());
@@ -103,6 +140,14 @@ public class ISSACApplication extends Application {
     }
 
     private void analyzeDocument() {
+
+        if (analysisRunning) {
+            analysisDisplay.setText(
+                    "Qwen is already analyzing a document. Please wait."
+            );
+            return;
+        }
+
 
         // Get the document name currently selected in the ListView.
         String selectedDocument =
@@ -164,28 +209,51 @@ public class ISSACApplication extends Application {
 
         // Create a separate thread to execute our analysis task.
         Thread analysisThread = new Thread(analysisTask);
+        analysisRunning = true;
+        analysisThread.start();
 
         // Runs on the JavaFX Application Thread after the task succeeds.
         analysisTask.setOnSucceeded(event -> {
 
-            // Retrieve the String returned by the task's call() method.
+            analysisRunning = false;
+
             String result = analysisTask.getValue();
 
-            // Associate the completed analysis with the selected document.
+            // Save the analysis in memory.
             analyses.put(selectedDocument, result);
 
-            // Display the analysis in our JavaFX TextArea.
-            analysisDisplay.setText(result);
+            // Save the analysis to disk.
+            try {
+                analysisStore.saveAnalysis(selectedDocument, result);
+            } catch (IOException e) {
+                System.err.println("Failed to save analysis for " + selectedDocument + ": " + e.getMessage()
+                );
+            }
+
+            // Only display the result if its document is still selected.
+            if (selectedDocument.equals(documentList.getSelectionModel().getSelectedItem())) {
+
+                analysisDisplay.setText(result);
+            }
         });
 
         // Runs on the JavaFX Application Thread if call() throws an exception.
         analysisTask.setOnFailed(event -> {
 
-            // Retrieve the exception that caused the task to fail.
+            analysisRunning = false;
+
             Throwable error = analysisTask.getException();
 
-            // Display the failure inside ISSAC rather than only in IntelliJ.
-            analysisDisplay.setText("Analysis failed: " + error.getMessage());
+            String errorMessage = "Analysis failed: " + error.getMessage();
+
+            // Remember which document expierenced the failure.
+            analysisErrors.put(selectedDocument, errorMessage);
+
+            // Only show the error if the failed document is still selected.
+            if (selectedDocument.equals(documentList.getSelectionModel().getSelectedItem())) {
+
+                analysisDisplay.setText(errorMessage);
+            }
         });
 
         // Allow the application to close without waiting for this thread.
@@ -205,10 +273,66 @@ public class ISSACApplication extends Application {
         try {
             reader.docDelete(selectedDocument);
             documentList.getItems().remove(selectedDocument);
+            analysisStore.deleteAnalysis(selectedDocument);
+
+            // Remove the analysis from the in-memory cache as well.
+            analyses.remove(selectedDocument);
+
+            // If you've added the error map, clear that too.
+            analysisErrors.remove(selectedDocument);
 
         } catch (IOException e) {
             System.out.println("Delete failed: " + e.getMessage());
         }
+
+    }
+
+    private void clearSession() {
+
+        try {
+            reader.clearAllDocuments();
+            analysisStore.clearAllAnalyses();
+
+            analyses.clear();
+            documentList.getItems().clear();
+            analysisDisplay.clear();
+
+            System.out.println("ISSAC session cleared.");
+
+        } catch (IOException e) {
+            System.err.println(
+                    "Session cleanup incomplete: " + e.getMessage()
+            );
+        }
+    }
+
+    private void confirmClearSession() {
+
+        if (analysisRunning) {
+
+            Alert warning = new Alert(Alert.AlertType.WARNING, "Please wait for the current analysis to finish before clearing the session.", ButtonType.OK
+            );
+
+            warning.setHeaderText("Analysis in Progress");
+            warning.showAndWait();
+
+            return;
+        }
+
+        Alert confirmation = new Alert(
+                Alert.AlertType.CONFIRMATION,
+                "Delete all temporary documents and analyses?",
+                ButtonType.YES,
+                ButtonType.NO
+        );
+
+        confirmation.setHeaderText("Clear ISSAC Session");
+
+        confirmation.showAndWait().ifPresent(response -> {
+            if (response == ButtonType.YES) {
+                clearSession();
+            }
+        });
     }
 
     private void uploadFile(Stage primaryStage) {
@@ -222,8 +346,7 @@ public class ISSACApplication extends Application {
             return; // Cancels attempt
         }
 
-        TextInputDialog namePrompt =
-                new TextInputDialog(selectedFile.getName());
+        TextInputDialog namePrompt = new TextInputDialog(selectedFile.getName());
 
         namePrompt.setTitle("Document Name");
         namePrompt.setHeaderText("Enter a name for this document:");
@@ -280,5 +403,19 @@ public class ISSACApplication extends Application {
         } catch (IOException e) {
             System.out.println("Upload failed: " + e.getMessage());
         }
+    }
+
+    private void invalidateAnalysis(String documentName) throws IOException {
+
+        // Remove the saved analysis from disk first.
+        analysisStore.deleteAnalysis(documentName);
+
+        // Only clear the in-memory result after disk cleanup succeeds.
+        analyses.remove(documentName);
+    }
+
+    @Override
+    public void stop() {
+        modelServer.stopServer();
     }
 }

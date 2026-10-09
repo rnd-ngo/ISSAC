@@ -4,15 +4,16 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="c4c40d45-a691-42d8-a0f4-a73c94aaba6b" name="Changes" comment="Added UI and features">
-      <change afterPath="$PROJECT_DIR$/ROADMAP.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/issac/ai/AIModel.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/issac/ai/LocalModel.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/test_cases/ai_tests/LocalModelTest.java" afterDir="false" />
+    <list default="true" id="c4c40d45-a691-42d8-a0f4-a73c94aaba6b" name="Changes" comment="Roadmap, UI updates, AI features, Qwen integrated into ISSAS=C as a neuorn center">
+      <change afterPath="$PROJECT_DIR$/src/main/java/issac/ai/ModelServer.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/issac/analysis/AnalysisStore.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ROADMAP.md" beforeDir="false" afterPath="$PROJECT_DIR$/ROADMAP.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/issac/document/DocRead.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/issac/document/DocRead.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/issac/ui/ISSACApplication.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/issac/ui/ISSACApplication.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/issac/document/DocRead.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/issac/document/DocRead.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/issac/ui/ISSACApplication$1.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/issac/ui/ISSACApplication$1.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/issac/ui/ISSACApplication.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/issac/ui/ISSACApplication.class" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -53,28 +54,28 @@
   <component name="ProjectViewState">
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "Application.ISSAC.executor": "Run",
-    "Application.LocalModelTest.executor": "Run",
-    "Application.Tests.executor": "Run",
-    "ModuleVcsDetector.initialDetectionPerformed": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
-    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
-    "codeWithMe.voiceChat.enabledByDefault": "false",
-    "git-widget-placeholder": "main",
-    "kotlin-language-version-configured": "true",
-    "node.js.detected.package.jshint": "true",
-    "node.js.selected.package.jshint": "",
-    "nodejs_package_manager_path": "npm",
-    "project.structure.last.edited": "Modules",
-    "project.structure.proportion": "0.15",
-    "project.structure.side.proportion": "0.2",
-    "settings.editor.selected.configurable": "reference.settings.project.maven.repository.indices"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Application.ISSAC.executor&quot;: &quot;Run&quot;,
+    &quot;Application.LocalModelTest.executor&quot;: &quot;Run&quot;,
+    &quot;Application.Tests.executor&quot;: &quot;Run&quot;,
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
+    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+    &quot;codeWithMe.voiceChat.enabledByDefault&quot;: &quot;false&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.jshint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.jshint&quot;: &quot;&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;project.structure.last.edited&quot;: &quot;Modules&quot;,
+    &quot;project.structure.proportion&quot;: &quot;0.15&quot;,
+    &quot;project.structure.side.proportion&quot;: &quot;0.2&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;reference.settings.project.maven.repository.indices&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
       <recent name="C:\Users\rndng\IdeaProjects\ISSAC" />
@@ -107,7 +108,9 @@
     <MESSAGE value="Adding tests" />
     <MESSAGE value="Adding tests, PDF scanner, File identifier" />
     <MESSAGE value="Added UI and features" />
-    <option name="LAST_COMMIT_MESSAGE" value="Added UI and features" />
+    <MESSAGE value="Roadmap, UI updates, AI features, Qwen integrated into ISSAS=C as a neuorn center" />
+    <MESSAGE value="Roadmap, UI updates, AI features, Qwen integrated into ISSAC as a neuorn center" />
+    <option name="LAST_COMMIT_MESSAGE" value="Roadmap, UI updates, AI features, Qwen integrated into ISSAC as a neuorn center" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />

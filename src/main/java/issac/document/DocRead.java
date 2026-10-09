@@ -7,7 +7,10 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
+
 import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
@@ -105,6 +108,75 @@ public class DocRead {
         }
         else {
             System.out.println("Error: " + convertName(docName) + " could not be located.");
+        }
+    }
+
+    public void clearAllDocuments() throws IOException {
+
+        // Delete the extracted documents.
+        clearTextFiles(documentsDirectory);
+
+        // Delete the original files staged during upload.
+        clearFiles(Path.of("src", "data", "uploads"));
+
+        // Only forget the registry after cleanup succeeds.
+        documents.clear();
+    }
+
+    private void clearTextFiles(Path directory) throws IOException {
+
+        if (!Files.isDirectory(directory)) {
+            return;
+        }
+
+        try (var files = Files.list(directory)) {
+            for (Path file : files.toList()) {
+                if (Files.isRegularFile(file) && file.getFileName().toString().endsWith(".txt")) {
+                    Files.delete(file);
+                }
+            }
+        }
+    }
+
+    private void clearFiles(Path directory) throws IOException {
+
+        if (!Files.isDirectory(directory)) {
+            return;
+        }
+
+        try (var files = Files.list(directory)) {
+            for (Path file : files.toList()) {
+                if (Files.isRegularFile(file)) {
+                    Files.delete(file);
+                }
+            }
+        }
+    }
+
+    public Set<String> getDocumentNames() {
+        // Return a copy so the UI cannot modify our internal registry.
+        return new HashSet<>(documents.keySet());
+    }
+    public void loadSavedDocuments() throws IOException {
+
+        // Make sure the storage directory exists.
+        Files.createDirectories(documentsDirectory);
+
+        // Open a stream of files inside the document directory.
+        try (var files = Files.list(documentsDirectory)) {
+
+            files.filter(Files::isRegularFile)
+                    .filter(path -> path.toString().endsWith(".txt"))
+                    .forEach(path -> {
+
+                        // Remove the .txt extension to recover the document key.
+                        String fileName = path.getFileName().toString();
+                        String documentName =
+                                fileName.substring(0, fileName.length() - 4);
+
+                        // Rebuild the document registry.
+                        documents.put(documentName, path);
+                    });
         }
     }
 
