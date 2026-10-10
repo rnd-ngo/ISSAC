@@ -127,7 +127,8 @@ public class ISSACApplication extends Application {
         buttonArea.getChildren().addAll(
                 uploadButton,
                 deleteButton,
-                analyzeButton
+                analyzeButton,
+                clearButton
         );
 
         // Stack the main content and button row vertically.
@@ -210,7 +211,6 @@ public class ISSACApplication extends Application {
         // Create a separate thread to execute our analysis task.
         Thread analysisThread = new Thread(analysisTask);
         analysisRunning = true;
-        analysisThread.start();
 
         // Runs on the JavaFX Application Thread after the task succeeds.
         analysisTask.setOnSucceeded(event -> {

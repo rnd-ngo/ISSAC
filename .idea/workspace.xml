@@ -4,16 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="c4c40d45-a691-42d8-a0f4-a73c94aaba6b" name="Changes" comment="Roadmap, UI updates, AI features, Qwen integrated into ISSAS=C as a neuorn center">
-      <change afterPath="$PROJECT_DIR$/src/main/java/issac/ai/ModelServer.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/issac/analysis/AnalysisStore.java" afterDir="false" />
+    <list default="true" id="c4c40d45-a691-42d8-a0f4-a73c94aaba6b" name="Changes" comment="Updated Roadmap.md, Refined ISSAC's ability to delete and start up Qwen">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ROADMAP.md" beforeDir="false" afterPath="$PROJECT_DIR$/ROADMAP.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/issac/document/DocRead.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/issac/document/DocRead.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/issac/ui/ISSACApplication.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/issac/ui/ISSACApplication.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/issac/document/DocRead.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/issac/document/DocRead.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/issac/ui/ISSACApplication$1.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/issac/ui/ISSACApplication$1.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/issac/ui/ISSACApplication.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/issac/ui/ISSACApplication.class" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -110,7 +103,8 @@
     <MESSAGE value="Added UI and features" />
     <MESSAGE value="Roadmap, UI updates, AI features, Qwen integrated into ISSAS=C as a neuorn center" />
     <MESSAGE value="Roadmap, UI updates, AI features, Qwen integrated into ISSAC as a neuorn center" />
-    <option name="LAST_COMMIT_MESSAGE" value="Roadmap, UI updates, AI features, Qwen integrated into ISSAC as a neuorn center" />
+    <MESSAGE value="Updated Roadmap.md, Refined ISSAC's ability to delete and start up Qwen" />
+    <option name="LAST_COMMIT_MESSAGE" value="Updated Roadmap.md, Refined ISSAC's ability to delete and start up Qwen" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />
