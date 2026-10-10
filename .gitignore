@@ -1,0 +1,25 @@
+# Default ignored files
+/shelf/
+/Github/workspace.xml
+# Editor-based HTTP Client requests
+/httpRequests/
+# Ignored default folder with query files
+/queries/
+# Datasource local storage ignored files
+/dataSources/
+/dataSources.local.xml
+
+# IntelliJ IDEA settings
+.idea/
+*.iml
+
+# Maven build output
+target/
+
+# ISSAC document and analysis storage
+src/data/documents/
+src/data/uploads/
+src/data/analysis/
+
+# Logs and temporary files
+*.log
