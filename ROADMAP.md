@@ -40,6 +40,7 @@ Build the basic application and document-processing infrastructure.
 - [x] Clean up temporary uploads after processing
 - [x] Restore saved documents and their analyses on startup
 - [x] Prevent document uploads during active analysis
+- [x] Prevent document deletion during active analysis
 - [x] Improve `.gitignore` to exclude generated application data
 
 ## Remaining
@@ -117,8 +118,13 @@ requiring the rest of ISSAC to be redesigned.
 - [x] Automatically display cached analyses when selecting documents
 - [x] Save analyses to disk and restore them on startup
 - [ ] Invalidate cached analyses when documents are replaced or deleted
-- [ ] Disable repeated analysis requests while processing
-- [ ] Improve progress indicators and user-facing error messages
+- [x] Disable repeated analysis requests while processing
+- [x] Add document-level analysis status indicators and cancellation feedback
+- [x] Add per-document Cancel control during active analysis
+- [x] Display elapsed cancellation time and brief completion confirmation
+- [x] Wait for background worker completion before releasing the analysis lock
+- [x] Verify recovery from a simulated AI analysis failure
+- [ ] Improve progress indicators and user-facing error messages further
 - [x] Add Clear Analysis button with confirmation
 - [x] Delete individual saved analyses without deleting source documents
 - [x] Allow cleared documents to be analyzed again
@@ -686,7 +692,7 @@ continue working on the current milestone.
 
 # Current Development Position
 
-**Last Updated:** October 10, 2026
+**Last Updated:** October 11, 2026
 
 ## Current Phase
 
@@ -714,6 +720,7 @@ Avoid introducing major new systems until the current foundation is sufficiently
 
 ### Document Management
 
+- Prevented deletion of documents while analysis is active.
 - Implemented TXT, PDF, and DOCX ingestion.
 - Added document naming normalization using `DocRead.convertName()`.
 - Added automatic filename suggestions during document upload.
@@ -728,6 +735,12 @@ Avoid introducing major new systems until the current foundation is sufficiently
 
 ### Analysis Management
 
+- Added document row statuses: Not Analyzed, Analyzing, Cancelling, Cancelled, Analyzed, and Failed.
+- Added a Cancel button beside the active document and elapsed cancellation time for slow requests.
+- Added a brief Cancelled confirmation that returns to the document's prior saved-analysis status.
+- Kept the analysis lock until both task outcome processing and the worker thread finish.
+- Tested simulated failure recovery: errors displayed and subsequent attempts were permitted.
+- Cleaned up duplicate list refreshes and temporary cancellation diagnostics.
 - Integrated Qwen3.5-0.8B with ISSAC through llama.cpp.
 - Connected document ingestion to background AI analysis.
 - Implemented persistent analysis storage using `AnalysisStore`.
@@ -782,6 +795,8 @@ Avoid introducing major new systems until the current foundation is sufficiently
 8. Remove obsolete readiness-monitoring code.
 
 ### Priority 2 — Document and Analysis Reliability
+
+Completed this session: deletion protection during analysis, per-document status/cancellation UI, and simulated failure recovery. Remaining work:
 
 1. Improve document import success/failure reporting.
 2. Improve unsupported-file handling.
@@ -881,6 +896,7 @@ Begin with model evaluation, task-specific datasets, and small-scale experiments
 
 ### Analysis Management
 
+- Cancellation confirms that ISSAC's task worker finished; it does not establish immediate termination of llama.cpp server-side generation.
 - Only one saved analysis is supported per document.
 - Analysis history is not implemented.
 - Custom analysis prompts are not yet available.
@@ -902,7 +918,7 @@ Begin with model evaluation, task-specific datasets, and small-scale experiments
 
 **Finish Phase 2 reliability work before introducing major Phase 3 capabilities.**
 
-The immediate focus is AI readiness enforcement, startup recovery, improved error handling, and reliable document lifecycle management.
+The immediate focus is AI readiness enforcement, startup recovery, improved error handling, and reliable document lifecycle management. The October 11 session completed cancellation UX and validated simulated analysis-failure recovery; AI startup and server-side cancellation behavior still require testing.
 
 Once these are stable, begin designing analysis history and multiple analyses per document.
 
