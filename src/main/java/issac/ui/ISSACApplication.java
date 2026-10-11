@@ -1,5 +1,6 @@
 package issac.ui;
 
+import javafx.application.Platform;
 import javafx.stage.FileChooser;
 import javafx.application.Application;
 import javafx.stage.Stage;
@@ -12,6 +13,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import javafx.scene.control.TextInputDialog;
 import issac.analysis.AnalysisStore;
+import javafx.scene.control.Label;
+import java.nio.file.StandardCopyOption;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -36,13 +39,25 @@ public class ISSACApplication extends Application {
     private final Map<String, String> analyses = new HashMap<>();
     private final Map<String, String> analysisErrors = new HashMap<>();
     private boolean analysisRunning = false;
+    private Label aiStatusLabel;
+    private Button restartAIButton = new Button("Restart AI");
 
     @Override
     public void start(Stage primaryStage) {
 
+        aiStatusLabel = new Label();
+        updateAIStatus("STARTING");
+
         try {
             modelServer.startServer();
+
+            // Begin checking whether Qwen is ready.
+            monitorAIStatus();
+
         } catch (IOException e) {
+
+            updateAIStatus("OFFLINE");
+
             System.err.println("Unable to start Qwen: " + e.getMessage());
         }
 
@@ -83,12 +98,15 @@ public class ISSACApplication extends Application {
         Button uploadButton = new Button("Upload Document(s)");
         Button deleteButton = new Button("Delete Document(s)");
         Button analyzeButton = new Button("Analyze Document(s)");
+        Button clearAnalysisButton = new Button("Clear Analysis");
         Button clearButton = new Button("Clear Session");
 
         clearButton.setOnAction(event -> confirmClearSession());
         uploadButton.setOnAction(event -> uploadFile(primaryStage));
         deleteButton.setOnAction(event -> deleteDocument());
         analyzeButton.setOnAction(event -> analyzeDocument());
+        clearAnalysisButton.setOnAction(event -> clearSelectedAnalysis());
+        restartAIButton.setOnAction(event -> restartAI());
 
         // Arrange the document list and analysis display side by side.
         HBox contentArea = new HBox(10);
@@ -128,16 +146,73 @@ public class ISSACApplication extends Application {
                 uploadButton,
                 deleteButton,
                 analyzeButton,
-                clearButton
+                clearAnalysisButton,
+                clearButton,
+                restartAIButton
         );
 
         // Stack the main content and button row vertically.
         VBox layout = new VBox(10);
-        layout.getChildren().addAll(contentArea, buttonArea);
+        layout.getChildren().addAll(contentArea, buttonArea, aiStatusLabel);
         Scene scene = new Scene(layout, 800, 600);
 
         primaryStage.setScene(scene);
         primaryStage.show();
+    }
+
+    private void clearSelectedAnalysis() {
+
+        // Identify the currently selected document.
+        String selectedDocument = documentList.getSelectionModel().getSelectedItem();
+
+        // Make sure a document is selected.
+        if (selectedDocument == null) {
+            return;
+        }
+
+        // Prevent changes while an analysis is running.
+        if (analysisRunning) {
+            Alert warning = new Alert(Alert.AlertType.WARNING);
+            warning.setTitle("Analysis in Progress");
+            warning.setHeaderText("Cannot clear analysis while the AI is working.");
+            warning.showAndWait();
+            return;
+        }
+
+        // Ask the user to confirm the deletion.
+        Alert confirmation = new Alert(Alert.AlertType.CONFIRMATION);
+        confirmation.setTitle("Clear Analysis");
+        confirmation.setHeaderText("Remove the saved analysis?");
+        confirmation.setContentText(
+                "The document \"" + selectedDocument + "\" will be preserved."
+        );
+
+        Optional<ButtonType> result = confirmation.showAndWait();
+
+        if (result.isEmpty() || result.get() != ButtonType.OK) {
+            return;
+        }
+        try {
+
+            // Remove the analysis from memory and disk.
+            invalidateAnalysis(selectedDocument);
+
+            // Remove any previous analysis error.
+            analysisErrors.remove(selectedDocument);
+
+            // Update the interface only after successful deletion.
+            analysisDisplay.setText("This document has not been analyzed yet.");
+
+        } catch (IOException e) {
+
+            // Inform the user if the saved analysis could not be deleted.
+            Alert errorAlert = new Alert(Alert.AlertType.ERROR);
+            errorAlert.setTitle("Clear Analysis Failed");
+            errorAlert.setHeaderText("Could not remove the saved analysis.");
+            errorAlert.setContentText(e.getMessage());
+            errorAlert.showAndWait();
+
+        }
     }
 
     private void analyzeDocument() {
@@ -242,6 +317,9 @@ public class ISSACApplication extends Application {
 
             analysisRunning = false;
 
+            // Remove any previous error now that analysis succeeded.
+            analysisErrors.remove(selectedDocument);
+
             Throwable error = analysisTask.getException();
 
             String errorMessage = "Analysis failed: " + error.getMessage();
@@ -337,6 +415,15 @@ public class ISSACApplication extends Application {
 
     private void uploadFile(Stage primaryStage) {
 
+        // Safeguard against already running analysis
+        if (analysisRunning) {
+            Alert warning = new Alert(Alert.AlertType.WARNING);
+            warning.setTitle("Analysis in Progress");
+            warning.setHeaderText("Please wait until Qwen finishes analyzing.");
+            warning.showAndWait();
+            return;
+        }
+
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Select Document");
         File selectedFile = fileChooser.showOpenDialog(primaryStage);
@@ -346,8 +433,15 @@ public class ISSACApplication extends Application {
             return; // Cancels attempt
         }
 
-        TextInputDialog namePrompt = new TextInputDialog(selectedFile.getName());
+        String originalFileName = selectedFile.getName();
 
+        int extensionIndex = originalFileName.lastIndexOf('.');
+
+        String suggestedName = extensionIndex > 0
+                ? originalFileName.substring(0, extensionIndex)
+                : originalFileName;
+
+        TextInputDialog namePrompt = new TextInputDialog(suggestedName);
         namePrompt.setTitle("Document Name");
         namePrompt.setHeaderText("Enter a name for this document:");
 
@@ -358,14 +452,36 @@ public class ISSACApplication extends Application {
             return; // Cancels attempt
         }
 
-        String documentName = result.get();
+        String enteredName = result.get();
+
+        // Safeguard against just "___"
+        if (enteredName.isBlank()) {
+            Alert invalidName = new Alert(Alert.AlertType.WARNING);
+            invalidName.setTitle("Invalid Document Name");
+            invalidName.setHeaderText("Document name cannot be empty.");
+            invalidName.showAndWait();
+            return;
+        }
+
+        String documentName = reader.convertName(enteredName);
+
+        // Safeguard against invalid name entered
+        if (documentName.isBlank()) {
+            Alert invalidName = new Alert(Alert.AlertType.WARNING);
+            invalidName.setTitle("Invalid Document Name");
+            invalidName.setHeaderText("Please enter a valid document name.");
+            invalidName.showAndWait();
+            return;
+        }
 
         System.out.println("ISSAC document name: " + documentName);
 
         Path sourcePath = selectedFile.toPath();
         Path uploadsDirectory = Path.of("src", "data", "uploads");
-        Path destinationPath = uploadsDirectory.resolve(sourcePath.getFileName());
 
+        String extension = extensionIndex > 0
+                ? originalFileName.substring(extensionIndex)
+                : ".tmp";
         // Prompts overwrite document feature
         boolean overWrite = false;
 
@@ -385,15 +501,34 @@ public class ISSACApplication extends Application {
 
             overWrite = true;
         }
+
+        Path destinationPath = null;
+
         // Copies source file into uploaded folder
         try {
             Files.createDirectories(uploadsDirectory);
-            Files.copy(sourcePath, destinationPath);
+
+            destinationPath = Files.createTempFile(
+                    uploadsDirectory,
+                    "issac_",
+                    extension
+            );
+
+            Files.copy(sourcePath, destinationPath, StandardCopyOption.REPLACE_EXISTING);
 
             System.out.println("Copied to: " + destinationPath);
 
             reader.readDoc(destinationPath.toString(), documentName, overWrite);
-            Files.delete(destinationPath);
+
+            // Invalidate the previous analysis if the document was overwritten.
+            if (overWrite) {
+                invalidateAnalysis(documentName);
+
+                // Only update the display if this document is selected.
+                if (documentName.equals(documentList.getSelectionModel().getSelectedItem())) {
+                    analysisDisplay.setText("This document has not been analyzed yet.");
+                }
+            }
 
             // Add the name to the viewable list if not already
             if (!overWrite) {
@@ -402,6 +537,14 @@ public class ISSACApplication extends Application {
 
         } catch (IOException e) {
             System.out.println("Upload failed: " + e.getMessage());
+        } finally {
+            if (destinationPath != null) {
+                try {
+                    Files.deleteIfExists(destinationPath);
+                } catch (IOException e) {
+                    System.err.println("Temporary file cleanup failed: " + e.getMessage());
+                }
+            }
         }
     }
 
@@ -412,6 +555,145 @@ public class ISSACApplication extends Application {
 
         // Only clear the in-memory result after disk cleanup succeeds.
         analyses.remove(documentName);
+    }
+
+    private void restartAI() {
+
+        // Prevent repeated clicks while a restart is underway.
+        restartAIButton.setDisable(true);
+
+        // Let the user know we're attempting to start Qwen.
+        updateAIStatus("STARTING");
+
+        Thread restartThread = new Thread(() -> {
+
+            try {
+
+                // Avoid launching another process if Qwen is already running.
+                if (!modelServer.isServerRunning()) {
+                    modelServer.startServer();
+                }
+
+            } catch (IOException e) {
+
+                Platform.runLater(() -> {
+                    updateAIStatus("OFFLINE");
+
+                    Alert errorAlert = new Alert(Alert.AlertType.ERROR);
+                    errorAlert.setTitle("AI Startup Failed");
+                    errorAlert.setHeaderText("Unable to start Qwen.");
+                    errorAlert.setContentText(e.getMessage());
+                    errorAlert.showAndWait();
+                });
+
+            } finally {
+
+                Platform.runLater(() -> restartAIButton.setDisable(false));
+            }
+        });
+
+        restartThread.setDaemon(true);
+        restartThread.start();
+    }
+
+    private void updateAIStatus(String status) {
+
+        aiStatusLabel.setText("AI Status: " + status);
+
+        switch (status) {
+
+            case "ONLINE":
+                aiStatusLabel.setStyle(
+                        "-fx-text-fill: green; -fx-font-weight: bold;"
+                );
+                break;
+
+            case "STARTING":
+                aiStatusLabel.setStyle(
+                        "-fx-text-fill: orange; -fx-font-weight: bold;"
+                );
+                break;
+
+            default:
+                aiStatusLabel.setStyle(
+                        "-fx-text-fill: red; -fx-font-weight: bold;"
+                );
+                break;
+        }
+    }
+
+    private void monitorAIStatus() {
+
+        Thread monitorThread = new Thread(() -> {
+
+            while (!Thread.currentThread().isInterrupted()) {
+
+                boolean running = modelServer.isServerRunning();
+                boolean ready = running && modelServer.isServerReady();
+
+                String status;
+
+                if (ready) {
+
+                    status = "ONLINE";
+
+                } else if (running) {
+
+                    status = "STARTING";
+
+                } else {
+
+                    status = "OFFLINE";
+                }
+
+                Platform.runLater(() -> updateAIStatus(status));
+
+                try {
+                    Thread.sleep(2000);
+
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    break;
+                }
+            }
+        });
+
+        monitorThread.setDaemon(true);
+        monitorThread.start();
+    }
+
+    private void waitForAIReady() {
+
+        Thread readinessThread = new Thread(() -> {
+
+            // Give Qwen up to 60 seconds to initialize.
+            long deadline = System.currentTimeMillis() + 60_000;
+
+            while (System.currentTimeMillis() < deadline) {
+
+                if (modelServer.isServerReady()) {
+
+                    // JavaFX interface updates must run on its application thread.
+                    Platform.runLater(() -> updateAIStatus("ONLINE"));
+                    return;
+                }
+
+                try {
+                    Thread.sleep(1000);
+
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    return;
+                }
+            }
+
+            // Qwen did not become ready within the allowed time.
+            Platform.runLater(() -> updateAIStatus("OFFLINE"));
+
+        });
+
+        readinessThread.setDaemon(true);
+        readinessThread.start();
     }
 
     @Override

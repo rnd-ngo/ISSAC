@@ -2,12 +2,23 @@ package issac.ai;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.time.Duration;
 
 public class ModelServer {
 
     private Process serverProcess;
 
-    public void startServer() throws IOException {
+    public synchronized void startServer() throws IOException {
+
+        // Prevent ISSAC from launching a second Qwen process.
+        if (isServerRunning()) {
+            System.out.println("Qwen is already running. Skipping startup.");
+            return;
+        }
 
         Path serverDirectory = Path.of("C:", "ISSAC", "llama");
 
@@ -33,10 +44,45 @@ public class ModelServer {
         serverProcess = builder.start();
     }
 
+    public boolean isServerRunning() {
+
+        return serverProcess != null && serverProcess.isAlive();
+    }
+
     public void stopServer() {
 
         if (serverProcess != null && serverProcess.isAlive()) {
             serverProcess.destroy();
+        }
+    }
+
+    public boolean isServerReady() {
+
+        HttpClient client = HttpClient.newHttpClient();
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create("http://127.0.0.1:8080/health"))
+                .timeout(Duration.ofSeconds(2))
+                .GET()
+                .build();
+
+        try {
+
+            HttpResponse<Void> response = client.send(
+                    request,
+                    HttpResponse.BodyHandlers.discarding()
+            );
+
+            return response.statusCode() == 200;
+
+        } catch (IOException e) {
+
+            return false;
+
+        } catch (InterruptedException e) {
+
+            Thread.currentThread().interrupt();
+            return false;
         }
     }
 }

@@ -83,11 +83,11 @@ public class DocRead {
         return fileName.substring(dotLocation+1).toLowerCase();
     }
 
-    private String convertName(String name) {
-        String fileName = name.toLowerCase(); // Lowercases letters
-        fileName = fileName.replace(" ","_"); // Need to refine these
-        fileName = fileName.replaceAll("[^a-z0-9_-]",""); // Replace special characters
-        return fileName;
+    public String convertName(String name) {
+        return name.toLowerCase()
+                .replaceAll("\\.[a-z0-9]+$", "")
+                .replace(" ", "_")
+                .replaceAll("[^a-z0-9_-]", "");
     }
 
     public boolean isUploaded(String docName) {

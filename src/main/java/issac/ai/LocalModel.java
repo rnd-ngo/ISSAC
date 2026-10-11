@@ -50,8 +50,10 @@ public class LocalModel implements AIModel {
             // HTTP 200 indicates success; other status codes may indicate errors.
             if (response.statusCode() != 200) {
 
-                // Return an understandable error instead of parsing invalid response data.
-                return "AI server error (HTTP " + response.statusCode() + ")";
+                // Signal a failed request instead of returning a normal analysis.
+                throw new IOException(
+                        "AI server error (HTTP " + response.statusCode() + ")"
+                );
             }
 
             // Convert the JSON response string into an object Java can navigate.
@@ -73,14 +75,13 @@ public class LocalModel implements AIModel {
         } catch (IOException e) {
 
             // Handle failures such as the server being unavailable.
-            return "Connection error: " + e.getMessage();
+            throw new RuntimeException("AI request failed: " + e.getMessage(), e);
 
         } catch (InterruptedException e) {
 
             // Restore the thread's interrupted status.
             Thread.currentThread().interrupt();
-
-            return "Request interrupted.";
+            throw new RuntimeException("AI request interrupted.", e);
         }
     }
 
