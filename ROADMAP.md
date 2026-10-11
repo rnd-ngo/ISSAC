@@ -32,16 +32,29 @@ Build the basic application and document-processing infrastructure.
 - [x] Add document ListView
 - [x] Implement document deletion
 - [x] Implement temporary upload staging
+- [x] Normalize document names consistently using `DocRead.convertName()`
+- [x] Suggest document names using the original filename
+- [x] Validate empty and invalid document names
+- [x] Invalidate saved analyses when documents are overwritten
+- [x] Generate unique temporary upload filenames
+- [x] Clean up temporary uploads after processing
+- [x] Restore saved documents and their analyses on startup
+- [x] Prevent document uploads during active analysis
+- [x] Improve `.gitignore` to exclude generated application data
 
 ## Remaining
 
 - [ ] Improve `DocRead` success/failure reporting
 - [ ] Clean up `DocRead` edge cases
 - [ ] Improve UI error reporting
-- [ ] Validate document names
+- [x] Validate document names
 - [x] Restore existing documents into the registry on startup
 - [ ] Improve unsupported-file handling
 - [ ] Add delete confirmation
+- [ ] Improve unsupported-file handling and report failed imports
+- [ ] Add document deletion confirmation
+- [ ] Improve document import success/failure reporting
+- [ ] Prevent partial document updates if analysis invalidation fails
 
 ---
 
@@ -106,6 +119,15 @@ requiring the rest of ISSAC to be redesigned.
 - [ ] Invalidate cached analyses when documents are replaced or deleted
 - [ ] Disable repeated analysis requests while processing
 - [ ] Improve progress indicators and user-facing error messages
+- [x] Add Clear Analysis button with confirmation
+- [x] Delete individual saved analyses without deleting source documents
+- [x] Allow cleared documents to be analyzed again
+- [x] Handle failed AI requests through JavaFX Task failure callbacks
+- [x] Display AI analysis errors without saving them as successful results
+- [x] Prevent simultaneous document analysis requests
+- [ ] Add analysis history and multiple analyses per document
+- [ ] Add customizable analysis prompts
+- [ ] Improve analysis persistence error reporting
 
 ### Reliability and Document Handling
 
@@ -121,6 +143,22 @@ requiring the rest of ISSAC to be redesigned.
 - [x] Implement `ModelServer` using Java `ProcessBuilder`
 - [x] Launch llama.cpp automatically when ISSAC starts
 - [x] Successfully connect ISSAC to the automatically launched Qwen server
+- [x] Implement AI readiness checks using the llama.cpp `/health` endpoint
+- [x] Add AI status indicator: OFFLINE, STARTING, ONLINE
+- [x] Monitor AI server health continuously
+- [x] Detect unexpected termination of the managed AI process
+- [x] Add Restart AI button
+- [x] Restart the AI server without restarting ISSAC
+- [x] Prevent duplicate startup of the same managed AI process
+- [x] Run manual AI restart on a background thread
+- [x] Implement AI server shutdown when ISSAC exits
+- [ ] Verify shutdown and cleanup across abnormal termination scenarios
+- [ ] Prevent analysis requests until AI readiness is confirmed
+- [ ] Add AI startup timeout and unresponsive-server handling
+- [ ] Handle port conflicts and externally started AI servers
+- [ ] Ensure health monitoring also starts if initial server launch fails
+- [ ] Move initial AI startup off the JavaFX Application Thread
+- [ ] Remove unused `waitForAIReady()` method after confirming replacement
 - [ ] Verify llama.cpp terminates when ISSAC closes
 - [ ] Detect model readiness using the local `/health` endpoint
 - [ ] Prevent analysis requests until the model is ready
@@ -130,6 +168,11 @@ requiring the rest of ISSAC to be redesigned.
 
 - [x] Design document and analysis cleanup methods
 - [x] Add Clear Session confirmation workflow
+- [x] Test Clear Session with disposable documents
+- [x] Block Clear Session while analysis is running
+- [x] Clear saved documents and analyses during session reset
+- [ ] Improve partial cleanup failure reporting
+- [ ] Verify cleanup consistency after filesystem errors
 - [ ] Verify Clear Session removes documents, uploads, analyses, and in-memory state
 - [ ] Verify session reset is blocked while analysis is running
 - [ ] Handle partial cleanup failures
@@ -643,61 +686,244 @@ continue working on the current milestone.
 
 # Current Development Position
 
+**Last Updated:** October 10, 2026
+
 ## Current Phase
 
 **Phase 2 — First AI**
 
+**Status: Core AI integration complete; reliability and lifecycle improvements ongoing.**
+
+ISSAC has a working offline-first document-analysis prototype with persistent document storage, local AI integration, analysis persistence, AI health monitoring, and manual AI recovery.
+
+Development remains focused on improving reliability before expanding into more advanced analytical capabilities.
+
+---
+
 ## Current Objective
 
-Improve reliability, session cleanup, and document lifecycle management for ISSAC's working local-AI prototype.
+Complete the remaining reliability improvements for ISSAC's document-processing and local-AI systems.
+
+Prepare the existing architecture for future analysis history, document grouping, multi-source analysis, and portable deployment.
+
+Avoid introducing major new systems until the current foundation is sufficiently stable.
+
+---
 
 ## Last Completed
 
-- Integrated Qwen3.5-0.8B with ISSAC through llama.cpp and `LocalModel`.
-- Connected document ingestion to background AI analysis in JavaFX.
-- Associated analysis results with their source documents.
-- Implemented document recovery from saved files on application startup.
-- Implemented analysis persistence using `AnalysisStore`.
-- Successfully restored previously generated analyses after restarting ISSAC.
-- Implemented automatic startup of llama.cpp through `ModelServer`.
-- Added initial session-cleanup methods and Clear Session confirmation logic.
-- Began restricting concurrent analyses to avoid conflicting operations.
+### Document Management
+
+- Implemented TXT, PDF, and DOCX ingestion.
+- Added document naming normalization using `DocRead.convertName()`.
+- Added automatic filename suggestions during document upload.
+- Improved invalid document-name handling.
+- Implemented document overwrite confirmation.
+- Added invalidation of saved analyses when source documents are overwritten.
+- Implemented unique temporary upload filenames.
+- Added temporary upload cleanup using `finally`.
+- Preserved document recovery across application restarts.
+- Preserved saved analysis recovery across application restarts.
+- Improved Git tracking rules to exclude generated application data.
+
+### Analysis Management
+
+- Integrated Qwen3.5-0.8B with ISSAC through llama.cpp.
+- Connected document ingestion to background AI analysis.
+- Implemented persistent analysis storage using `AnalysisStore`.
+- Associated saved analyses with their source documents.
+- Added a Clear Analysis button.
+- Implemented individual analysis deletion while preserving source documents.
+- Enabled reanalysis after clearing saved results.
+- Improved HTTP error handling in `LocalModel`.
+- Added JavaFX Task failure handling for unsuccessful AI requests.
+- Prevented simultaneous analysis requests.
+- Improved analysis error messages.
+
+### AI Lifecycle and Recovery
+
+- Implemented automatic llama.cpp startup using `ModelServer`.
+- Implemented application-managed AI shutdown.
+- Added AI server readiness checks through the `/health` endpoint.
+- Added AI status indicator with three states:
+    - OFFLINE
+    - STARTING
+    - ONLINE
+- Implemented continuous AI health monitoring.
+- Added detection of unexpected AI process termination.
+- Added Restart AI button.
+- Implemented AI restart without restarting ISSAC.
+- Added duplicate-process startup protection.
+- Implemented synchronized AI server startup.
+- Moved manual AI restart operations to a background thread.
+- Tested recovery from unexpected Qwen termination.
+
+### Session Management
+
+- Implemented Clear Session confirmation.
+- Tested session cleanup using disposable documents.
+- Added protection against clearing sessions during active analysis.
+- Implemented deletion of stored documents and analyses.
+- Preserved application stability during normal cleanup operations.
+
+---
 
 ## Next Steps
 
-1. Test Clear Session with disposable documents and confirm all intended session files are deleted.
-2. Verify cleanup cannot occur while an analysis is active.
-3. Verify `ModelServer` shuts down llama.cpp when ISSAC exits.
-4. Add model-readiness detection to prevent HTTP 503 errors during startup.
-5. Invalidate saved analyses when documents are overwritten or deleted.
-6. Improve partial-failure reporting and error handling.
-7. Revisit portable session storage and Safe Detach after the current cleanup workflow is reliable.
+### Priority 1 — AI Reliability
+
+1. Ensure the AI health monitor operates even if the initial server launch fails.
+2. Prevent analysis requests when the AI server is not ready.
+3. Add startup timeout and unresponsive-server handling.
+4. Improve Restart AI button behavior during startup.
+5. Move initial AI startup off the JavaFX Application Thread.
+6. Verify AI process shutdown and cleanup.
+7. Investigate port conflicts and external llama.cpp processes.
+8. Remove obsolete readiness-monitoring code.
+
+### Priority 2 — Document and Analysis Reliability
+
+1. Improve document import success/failure reporting.
+2. Improve unsupported-file handling.
+3. Add document deletion confirmation.
+4. Verify analysis files are not saved after failed AI requests.
+5. Improve analysis persistence error reporting.
+6. Prevent inconsistent state during partial filesystem failures.
+7. Improve error visibility in the JavaFX interface.
+
+### Priority 3 — Analysis Management
+
+1. Design support for multiple analyses per document.
+2. Introduce unique analysis identifiers.
+3. Add analysis timestamps.
+4. Add analysis history.
+5. Support different analysis types and prompts.
+6. Allow analysts to select previously generated analyses.
+
+### Priority 4 — Architectural Preparation
+
+1. Review the existing `AIModel` interface.
+2. Preserve separation between AI implementation and application functionality.
+3. Reduce hardcoded model and runtime paths.
+4. Design configurable application storage locations.
+5. Prepare analysis storage for future document grouping.
+6. Preserve source-document relationships throughout analysis.
+
+---
+
+## Upcoming Milestones
+
+### Milestone A — Reliable Local AI
+
+ISSAC reliably starts, monitors, stops, and restarts its local AI runtime.
+
+Analysis requests are only accepted when the AI is ready.
+
+Server failures are reported clearly without corrupting saved analyses.
+
+**Status: In progress; major capabilities implemented.**
+
+### Milestone B — Analysis History
+
+ISSAC supports multiple saved analyses per document.
+
+Each analysis has an identifier, timestamp, source-document association, and analysis type.
+
+**Status: Planned.**
+
+### Milestone C — Document Groups
+
+ISSAC supports creating groups of related documents.
+
+Groups can be analyzed together while preserving individual source references.
+
+**Status: Planned.**
+
+### Milestone D — Self-Contained ISSAC
+
+ISSAC can be installed and operated without separately configuring Java, llama.cpp, or the AI model.
+
+Application paths and dependencies are managed through a portable installation structure.
+
+**Status: Planned.**
+
+### Milestone E — Custom ISSAC AI
+
+Investigate and develop specialized AI capabilities for ISSAC.
+
+Begin with model evaluation, task-specific datasets, and small-scale experiments before pursuing custom model training.
+
+**Status: Long-term research objective.**
+
+---
 
 ## Known Limitations
 
-- A running llama.cpp process does not necessarily mean the model is ready.
-- Saved analyses may become stale if a document is replaced.
-- Session cleanup is not transactional and requires additional testing.
-- Ordinary file deletion does not guarantee secure erasure.
-- Unexpected termination or USB removal may leave temporary files behind.
+### AI Runtime
+
+- The current AI runtime and model locations are hardcoded.
+- Initial model startup occurs on the JavaFX Application Thread.
+- AI readiness is monitored, but analysis requests are not yet blocked until the model is ready.
+- A running AI process may become unresponsive without terminating.
+- The current status monitor may classify an unresponsive server as STARTING.
+- AI startup failure may leave health monitoring inactive.
+- Port conflicts with externally launched servers are not fully handled.
+- The Restart AI button is re-enabled after process launch, not confirmed model readiness.
+- AI shutdown behavior requires additional edge-case testing.
+
+### Document Processing
+
+- Unsupported document types require clearer error reporting.
+- Document import and analysis invalidation are not transactional.
+- Document deletion does not yet require confirmation.
 - Long documents may exceed the model's context window.
+- Document chunking has not been implemented.
+
+### Analysis Management
+
+- Only one saved analysis is supported per document.
+- Analysis history is not implemented.
+- Custom analysis prompts are not yet available.
+- Source-level evidence validation is not implemented.
+- AI-generated claims are not automatically verified against source text.
+- Failed analysis persistence and partial-save behavior require further testing.
+
+### Session and Storage
+
+- Session cleanup is not transactional.
+- Partial filesystem failures may leave inconsistent state.
+- Ordinary file deletion does not guarantee secure erasure.
+- Unexpected termination may leave temporary files or incomplete operations.
+- Portable storage and Safe Detach are not yet implemented.
+
+---
 
 ## Development Priority
 
-Complete and verify the existing reliability features before introducing larger AI capabilities or portable deployment changes.
+**Finish Phase 2 reliability work before introducing major Phase 3 capabilities.**
+
+The immediate focus is AI readiness enforcement, startup recovery, improved error handling, and reliable document lifecycle management.
+
+Once these are stable, begin designing analysis history and multiple analyses per document.
+
+Document grouping and combined analysis should follow the analysis-storage redesign.
+
+---
 
 ## Do Not Forget
 
-- Portability is a core design goal.
+- Portability remains a core design requirement.
 - AI implementations should remain replaceable.
-- Ingestion and AI reasoning should remain separate.
-- Evidence and source provenance are fundamental.
-- The system should distinguish source facts from AI inference.
-- Analyst review remains part of consequential product generation.
-- New ideas should normally enter the Future Ideas / Parking Lot before
-  interrupting the current milestone.
-- Do not prematurely build future phases.
-- The roadmap is allowed to change.
+- Ingestion and AI reasoning must remain separate.
+- Evidence provenance is fundamental.
+- Source facts and model inferences must remain distinguishable.
+- Analyst validation is required for consequential analytical products.
+- Sensitive information must be handled according to applicable requirements.
+- Portability does not automatically provide security or isolation.
+- Major changes should be implemented incrementally and tested.
+- Understand each Java implementation before expanding it.
+- Record future ideas without interrupting current development.
+- The roadmap is a living document and should evolve with the application.
 
 ---
 

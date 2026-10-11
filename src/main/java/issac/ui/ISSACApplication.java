@@ -1,32 +1,32 @@
 package issac.ui;
 
 import javafx.application.Platform;
+import javafx.scene.control.*;
 import javafx.stage.FileChooser;
 import javafx.application.Application;
 import javafx.stage.Stage;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
 import javafx.scene.layout.VBox;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import javafx.scene.control.TextInputDialog;
-import issac.analysis.AnalysisStore;
+import javafx.geometry.Pos;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import issac.analysis.AnalysisStore;
 import java.nio.file.StandardCopyOption;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import issac.document.DocRead;
-import javafx.scene.control.Alert;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.ListView;
 import issac.ai.LocalModel;
 import javafx.concurrent.Task;
-import javafx.scene.control.TextArea;
 import javafx.scene.layout.HBox;
 import issac.ai.ModelServer;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
+import javafx.util.Duration;
 
 public class ISSACApplication extends Application {
 
@@ -41,6 +41,13 @@ public class ISSACApplication extends Application {
     private boolean analysisRunning = false;
     private Label aiStatusLabel;
     private Button restartAIButton = new Button("Restart AI");
+    private String analyzingDocument = null;
+    private Task<String> currentAnalysisTask;
+    private boolean cancellationRequested = false;
+    private boolean analysisWorkerFinished = false;
+    private boolean analysisOutcomeHandled = false;
+    private long cancellationStartTime = 0;
+    private Timeline cancellationTimer;
 
     @Override
     public void start(Stage primaryStage) {
@@ -108,11 +115,89 @@ public class ISSACApplication extends Application {
         clearAnalysisButton.setOnAction(event -> clearSelectedAnalysis());
         restartAIButton.setOnAction(event -> restartAI());
 
+
         // Arrange the document list and analysis display side by side.
         HBox contentArea = new HBox(10);
 
         // Give the document list a preferred width.
         documentList.setPrefWidth(250);
+
+        // Customize each document row to display its analysis status.
+        // Display each document's analysis status and contextual controls.
+        documentList.setCellFactory(listView -> new ListCell<>() {
+
+            @Override
+            protected void updateItem(String documentName, boolean empty) {
+                super.updateItem(documentName, empty);
+
+                if (empty || documentName == null) {
+                    setText(null);
+                    setGraphic(null);
+                    return;
+                }
+
+                Label documentLabel = new Label(documentName);
+                Label statusLabel = new Label();
+
+                HBox row = new HBox(10);
+                row.setAlignment(Pos.CENTER_LEFT);
+
+                if (documentName.equals(analyzingDocument)) {
+
+                    if (cancellationRequested) {
+
+                        long elapsedSeconds =
+                                (System.nanoTime() - cancellationStartTime)
+                                        / 1_000_000_000L;
+
+                        statusLabel.setText(
+                                "◌ Cancelling... " + elapsedSeconds + "s"
+                        );
+
+                    } else {
+
+                        statusLabel.setText("◌ Analyzing...");
+                    }
+
+                    row.getChildren().addAll(documentLabel, statusLabel);
+
+                    // Show Cancel only while cancellation has not been requested.
+                    if (!cancellationRequested) {
+
+                        Button cancelButton = new Button("Cancel");
+
+                        cancelButton.setOnAction(event -> {
+
+                            // Ensure this button still belongs to the active document.
+                            if (documentName.equals(analyzingDocument)) {
+                                cancelAnalysis();
+                                documentList.refresh();
+                            }
+                        });
+
+                        row.getChildren().add(cancelButton);
+                    }
+
+                } else if (analyses.containsKey(documentName)) {
+
+                    statusLabel.setText("✓ Analyzed");
+                    row.getChildren().addAll(documentLabel, statusLabel);
+
+                } else if (analysisErrors.containsKey(documentName)) {
+
+                    statusLabel.setText("✕ Failed");
+                    row.getChildren().addAll(documentLabel, statusLabel);
+
+                } else {
+
+                    statusLabel.setText("○ Not Analyzed");
+                    row.getChildren().addAll(documentLabel, statusLabel);
+                }
+
+                setText(null);
+                setGraphic(row);
+            }
+        });
 
         documentList.getSelectionModel()
                 .selectedItemProperty()
@@ -197,6 +282,9 @@ public class ISSACApplication extends Application {
             // Remove the analysis from memory and disk.
             invalidateAnalysis(selectedDocument);
 
+            // Refresh the document list to reflect the cleared analysis.
+            documentList.refresh();
+
             // Remove any previous analysis error.
             analysisErrors.remove(selectedDocument);
 
@@ -224,6 +312,21 @@ public class ISSACApplication extends Application {
             return;
         }
 
+        // Prevent analysis requests when Qwen is unavailable.
+        if (!modelServer.isServerReady()) {
+
+            Alert warning = new Alert(Alert.AlertType.WARNING);
+
+            warning.setTitle("AI Unavailable");
+            warning.setHeaderText("Qwen is not ready.");
+            warning.setContentText(
+                    "Please wait for the AI status to show ONLINE before analyzing."
+            );
+
+            warning.showAndWait();
+
+            return;
+        }
 
         // Get the document name currently selected in the ListView.
         String selectedDocument =
@@ -283,15 +386,48 @@ public class ISSACApplication extends Application {
         // Let the user know that analysis is currently running.
         analysisDisplay.setText("Analyzing document... Please wait.");
 
-        // Create a separate thread to execute our analysis task.
-        Thread analysisThread = new Thread(analysisTask);
+        // Run the analysis on a background thread.
+        Thread analysisThread = new Thread(() -> {
+
+            try {
+                analysisTask.run();
+
+            } finally {
+
+                // This executes when the background thread has returned.
+                Platform.runLater(() -> {
+
+                    analysisWorkerFinished = true;
+
+                    // Check whether the JavaFX outcome has also been handled.
+                    checkAnalysisCompletion();
+                });
+            }
+        });
+
+        // Remember which task belongs to the active analysis.
+        currentAnalysisTask = analysisTask;
+
         analysisRunning = true;
+        cancellationRequested = false;
+        analysisWorkerFinished = false;
+        analysisOutcomeHandled = false;
+        analyzingDocument = selectedDocument;
+
+        documentList.refresh();
 
         // Runs on the JavaFX Application Thread after the task succeeds.
         analysisTask.setOnSucceeded(event -> {
 
-            analysisRunning = false;
+            if (cancellationRequested || analysisTask.isCancelled()) {
+                return;
+            }
 
+            // Clear any previous analysis error for this document.
+            analysisErrors.remove(selectedDocument);
+
+            // Refresh the document list to update its status.
+            documentList.refresh();
             String result = analysisTask.getValue();
 
             // Save the analysis in memory.
@@ -310,15 +446,36 @@ public class ISSACApplication extends Application {
 
                 analysisDisplay.setText(result);
             }
+            // The successful result has been processed.
+            analysisOutcomeHandled = true;
+            checkAnalysisCompletion();
+        });
+
+        analysisTask.setOnCancelled(event -> {
+
+            // Cancellation was requested, but the worker may still be running.
+            if (selectedDocument.equals(
+                    documentList.getSelectionModel().getSelectedItem())) {
+
+                analysisDisplay.setText(
+                        "Cancellation requested. Waiting for analysis to stop..."
+                );
+            }
+
+            // JavaFX has processed the cancellation outcome.
+            analysisOutcomeHandled = true;
+
+            // This will only reset ISSAC if the worker has also finished.
+            checkAnalysisCompletion();
         });
 
         // Runs on the JavaFX Application Thread if call() throws an exception.
         analysisTask.setOnFailed(event -> {
 
-            analysisRunning = false;
-
-            // Remove any previous error now that analysis succeeded.
-            analysisErrors.remove(selectedDocument);
+            // Cancellation is not an analysis failure.
+            if (cancellationRequested || analysisTask.isCancelled()) {
+                return;
+            }
 
             Throwable error = analysisTask.getException();
 
@@ -327,11 +484,17 @@ public class ISSACApplication extends Application {
             // Remember which document expierenced the failure.
             analysisErrors.put(selectedDocument, errorMessage);
 
+            // Refresh the document list to show the failed status.
+            documentList.refresh();
+
             // Only show the error if the failed document is still selected.
             if (selectedDocument.equals(documentList.getSelectionModel().getSelectedItem())) {
 
                 analysisDisplay.setText(errorMessage);
             }
+            // The failure has been processed.
+            analysisOutcomeHandled = true;
+            checkAnalysisCompletion();
         });
 
         // Allow the application to close without waiting for this thread.
@@ -342,6 +505,23 @@ public class ISSACApplication extends Application {
     }
 
     private void deleteDocument() {
+
+        // Prevent document deletion while an analysis is running.
+        if (analysisRunning) {
+
+            Alert warning = new Alert(Alert.AlertType.WARNING);
+
+            warning.setTitle("Analysis in Progress");
+            warning.setHeaderText("Cannot delete documents during analysis.");
+            warning.setContentText(
+                    "Please wait for the current analysis to finish."
+            );
+
+            warning.showAndWait();
+
+            return;
+        }
+
         String selectedDocument = documentList.getSelectionModel().getSelectedItem();
 
         if (selectedDocument == null) {
@@ -355,9 +535,6 @@ public class ISSACApplication extends Application {
 
             // Remove the analysis from the in-memory cache as well.
             analyses.remove(selectedDocument);
-
-            // If you've added the error map, clear that too.
-            analysisErrors.remove(selectedDocument);
 
         } catch (IOException e) {
             System.out.println("Delete failed: " + e.getMessage());
@@ -662,38 +839,84 @@ public class ISSACApplication extends Application {
         monitorThread.start();
     }
 
-    private void waitForAIReady() {
+    private void finishAnalysisTask() {
 
-        Thread readinessThread = new Thread(() -> {
+        // Stop updating the cancellation timer.
+        if (cancellationTimer != null) {
+            cancellationTimer.stop();
+            cancellationTimer = null;
+        }
 
-            // Give Qwen up to 60 seconds to initialize.
-            long deadline = System.currentTimeMillis() + 60_000;
+        cancellationStartTime = 0;
 
-            while (System.currentTimeMillis() < deadline) {
+        analysisRunning = false;
+        cancellationRequested = false;
+        analysisWorkerFinished = false;
+        analysisOutcomeHandled = false;
+        analyzingDocument = null;
+        currentAnalysisTask = null;
 
-                if (modelServer.isServerReady()) {
+        documentList.refresh();
+    }
 
-                    // JavaFX interface updates must run on its application thread.
-                    Platform.runLater(() -> updateAIStatus("ONLINE"));
-                    return;
-                }
+    private void cancelAnalysis() {
 
-                try {
-                    Thread.sleep(1000);
+        if (!analysisRunning || currentAnalysisTask == null) {
+            return;
+        }
 
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                    return;
-                }
-            }
+        if (cancellationRequested) {
+            return;
+        }
 
-            // Qwen did not become ready within the allowed time.
-            Platform.runLater(() -> updateAIStatus("OFFLINE"));
+        cancellationRequested = true;
+        startCancellationTimer();
+        System.out.println("Cancel button reached cancelAnalysis().");
+        documentList.refresh();
 
-        });
+        // Update the active document's row to show cancellation is pending.
+        documentList.refresh();
 
-        readinessThread.setDaemon(true);
-        readinessThread.start();
+        analysisDisplay.setText(
+                "Cancelling analysis... Please wait."
+        );
+
+        // Ask JavaFX to interrupt the analysis worker.
+        currentAnalysisTask.cancel(true);
+
+        // Keep analysisRunning true for now.
+        // We must wait for the worker to actually finish.
+    }
+
+    private void startCancellationTimer() {
+
+        cancellationStartTime = System.nanoTime();
+        System.out.println("Cancellation timer started.");
+
+        // Stop an existing timer before creating another.
+        if (cancellationTimer != null) {
+            cancellationTimer.stop();
+        }
+
+        cancellationTimer = new Timeline(
+                new KeyFrame(Duration.seconds(1), event -> {
+                    if (cancellationRequested) {
+                        documentList.refresh();
+                    }
+                })
+        );
+
+        cancellationTimer.setCycleCount(Timeline.INDEFINITE);
+        cancellationTimer.play();
+    }
+
+    private void checkAnalysisCompletion() {
+
+        // Only reset ISSAC when both parts of the task are finished.
+        if (analysisWorkerFinished && analysisOutcomeHandled) {
+
+            finishAnalysisTask();
+        }
     }
 
     @Override
