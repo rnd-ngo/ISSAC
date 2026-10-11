@@ -27,6 +27,7 @@ import issac.ai.ModelServer;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.util.Duration;
+import javafx.animation.PauseTransition;
 
 public class ISSACApplication extends Application {
 
@@ -48,6 +49,8 @@ public class ISSACApplication extends Application {
     private boolean analysisOutcomeHandled = false;
     private long cancellationStartTime = 0;
     private Timeline cancellationTimer;
+    private String recentlyCancelledDocument = null;
+    private PauseTransition cancellationConfirmation;
 
     @Override
     public void start(Stage primaryStage) {
@@ -168,24 +171,28 @@ public class ISSACApplication extends Application {
 
                         cancelButton.setOnAction(event -> {
 
-                            // Ensure this button still belongs to the active document.
+                            // Ensure this button belongs to the active document.
                             if (documentName.equals(analyzingDocument)) {
                                 cancelAnalysis();
-                                documentList.refresh();
                             }
                         });
 
                         row.getChildren().add(cancelButton);
                     }
 
-                } else if (analyses.containsKey(documentName)) {
+                } else if (documentName.equals(recentlyCancelledDocument)) {
 
-                    statusLabel.setText("✓ Analyzed");
+                    statusLabel.setText("✓ Cancelled");
                     row.getChildren().addAll(documentLabel, statusLabel);
 
                 } else if (analysisErrors.containsKey(documentName)) {
 
                     statusLabel.setText("✕ Failed");
+                    row.getChildren().addAll(documentLabel, statusLabel);
+
+                } else if (analyses.containsKey(documentName)) {
+
+                    statusLabel.setText("✓ Analyzed");
                     row.getChildren().addAll(documentLabel, statusLabel);
 
                 } else {
@@ -337,6 +344,17 @@ public class ISSACApplication extends Application {
             return;
         }
 
+        // Clear any previous cancellation confirmation for this document.
+        if (selectedDocument.equals(recentlyCancelledDocument)) {
+
+            if (cancellationConfirmation != null) {
+                cancellationConfirmation.stop();
+                cancellationConfirmation = null;
+            }
+
+            recentlyCancelledDocument = null;
+        }
+
         // Create a background job that will eventually return a String.
         Task<String> analysisTask = new Task<>() {
 
@@ -426,8 +444,7 @@ public class ISSACApplication extends Application {
             // Clear any previous analysis error for this document.
             analysisErrors.remove(selectedDocument);
 
-            // Refresh the document list to update its status.
-            documentList.refresh();
+            // Retrieve the completed analysis.
             String result = analysisTask.getValue();
 
             // Save the analysis in memory.
@@ -440,6 +457,9 @@ public class ISSACApplication extends Application {
                 System.err.println("Failed to save analysis for " + selectedDocument + ": " + e.getMessage()
                 );
             }
+
+            // Refresh the document list after recording the completed analysis.
+            documentList.refresh();
 
             // Only display the result if its document is still selected.
             if (selectedDocument.equals(documentList.getSelectionModel().getSelectedItem())) {
@@ -481,17 +501,19 @@ public class ISSACApplication extends Application {
 
             String errorMessage = "Analysis failed: " + error.getMessage();
 
-            // Remember which document expierenced the failure.
+            // Remember which document experienced the failure.
             analysisErrors.put(selectedDocument, errorMessage);
 
             // Refresh the document list to show the failed status.
             documentList.refresh();
 
             // Only show the error if the failed document is still selected.
-            if (selectedDocument.equals(documentList.getSelectionModel().getSelectedItem())) {
+            if (selectedDocument.equals(
+                    documentList.getSelectionModel().getSelectedItem())) {
 
                 analysisDisplay.setText(errorMessage);
             }
+
             // The failure has been processed.
             analysisOutcomeHandled = true;
             checkAnalysisCompletion();
@@ -841,6 +863,12 @@ public class ISSACApplication extends Application {
 
     private void finishAnalysisTask() {
 
+        // Remember whether this analysis was cancelled before resetting its state.
+        boolean wasCancelled = cancellationRequested;
+
+        // Remember which document was being analyzed.
+        String completedDocument = analyzingDocument;
+
         // Stop updating the cancellation timer.
         if (cancellationTimer != null) {
             cancellationTimer.stop();
@@ -857,41 +885,73 @@ public class ISSACApplication extends Application {
         currentAnalysisTask = null;
 
         documentList.refresh();
+
+        // Confirm cancellation only after the analysis worker has finished.
+        if (wasCancelled && completedDocument != null) {
+            showCancellationConfirmation(completedDocument);
+        }
     }
 
     private void cancelAnalysis() {
 
+        // Only cancel an active analysis.
         if (!analysisRunning || currentAnalysisTask == null) {
             return;
         }
 
+        // Prevent duplicate cancellation requests.
         if (cancellationRequested) {
             return;
         }
 
+        // Mark cancellation as requested.
         cancellationRequested = true;
+
+        // Start tracking how long cancellation takes.
         startCancellationTimer();
-        System.out.println("Cancel button reached cancelAnalysis().");
+
+        // Update the active document's status.
         documentList.refresh();
 
-        // Update the active document's row to show cancellation is pending.
-        documentList.refresh();
-
+        // Inform the analyst that cancellation is underway.
         analysisDisplay.setText(
                 "Cancelling analysis... Please wait."
         );
 
-        // Ask JavaFX to interrupt the analysis worker.
+        // Request cancellation of the background task.
         currentAnalysisTask.cancel(true);
 
-        // Keep analysisRunning true for now.
-        // We must wait for the worker to actually finish.
+        // Keep analysisRunning true until the worker finishes.
+    }
+
+    private void showCancellationConfirmation(String documentName) {
+
+        // Stop any previous confirmation timer.
+        if (cancellationConfirmation != null) {
+            cancellationConfirmation.stop();
+        }
+
+        recentlyCancelledDocument = documentName;
+        documentList.refresh();
+
+        // Keep the confirmation visible for two seconds.
+        cancellationConfirmation =
+                new PauseTransition(Duration.seconds(2));
+
+        cancellationConfirmation.setOnFinished(event -> {
+
+            recentlyCancelledDocument = null;
+            cancellationConfirmation = null;
+
+            documentList.refresh();
+        });
+
+        cancellationConfirmation.play();
     }
 
     private void startCancellationTimer() {
 
         cancellationStartTime = System.nanoTime();
-        System.out.println("Cancellation timer started.");
 
         // Stop an existing timer before creating another.
         if (cancellationTimer != null) {
