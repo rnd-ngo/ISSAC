@@ -122,6 +122,12 @@ requiring the rest of ISSAC to be redesigned.
 - [x] Add document-level analysis status indicators and cancellation feedback
 - [x] Add per-document Cancel control during active analysis
 - [x] Display elapsed cancellation time and brief completion confirmation
+- [x] Display live analysis elapsed time and the latest successful analysis duration
+- [x] Display total analysis time alongside cancellation elapsed time
+- [ ] Persist analysis durations across application restarts
+- [ ] Remove stale analysis-duration metadata when analyses or documents are cleared, deleted, or overwritten
+- [ ] Develop clearly labeled estimated remaining analysis time from historical measurements
+- [ ] Evaluate cancellation-time estimates only after collecting sufficient timing data
 - [x] Wait for background worker completion before releasing the analysis lock
 - [x] Verify recovery from a simulated AI analysis failure
 - [ ] Improve progress indicators and user-facing error messages further
@@ -159,15 +165,17 @@ requiring the rest of ISSAC to be redesigned.
 - [x] Run manual AI restart on a background thread
 - [x] Implement AI server shutdown when ISSAC exits
 - [ ] Verify shutdown and cleanup across abnormal termination scenarios
-- [ ] Prevent analysis requests until AI readiness is confirmed
+- [x] Prevent analysis requests until AI readiness is confirmed
 - [ ] Add AI startup timeout and unresponsive-server handling
-- [ ] Handle port conflicts and externally started AI servers
-- [ ] Ensure health monitoring also starts if initial server launch fails
+- [x] Detect occupied port 8080 and refuse duplicate AI startup
+- [x] Display PORT CONFLICT when the managed AI process is absent and port 8080 is occupied
+- [ ] Verify identity and compatibility of externally started AI servers before adopting them
+- [x] Ensure health monitoring also starts if initial server launch fails
 - [ ] Move initial AI startup off the JavaFX Application Thread
 - [ ] Remove unused `waitForAIReady()` method after confirming replacement
-- [ ] Verify llama.cpp terminates when ISSAC closes
+- [x] Verify llama.cpp terminates after normal ISSAC shutdown
 - [ ] Detect model readiness using the local `/health` endpoint
-- [ ] Prevent analysis requests until the model is ready
+- [x] Prevent analysis requests until the model is ready
 - [ ] Handle startup failures and unexpected server termination
 
 ### Session Management
@@ -692,13 +700,13 @@ continue working on the current milestone.
 
 # Current Development Position
 
-**Last Updated:** October 11, 2026
+**Last Updated:** October 13, 2026
 
 ## Current Phase
 
 **Phase 2 — First AI**
 
-**Status: Core AI integration complete; reliability and lifecycle improvements ongoing.**
+**Status: Core AI integration complete; normal shutdown, port-conflict detection, startup recovery, and elapsed analysis timing verified.**
 
 ISSAC has a working offline-first document-analysis prototype with persistent document storage, local AI integration, analysis persistence, AI health monitoring, and manual AI recovery.
 
@@ -771,6 +779,15 @@ Avoid introducing major new systems until the current foundation is sufficiently
 - Moved manual AI restart operations to a background thread.
 - Tested recovery from unexpected Qwen termination.
 
+### October 13 — Reliability and Timing
+
+- Verified recovery from simulated initial AI startup failure using Restart AI; health monitoring continues after failure.
+- Strengthened managed llama.cpp shutdown with a bounded graceful wait and forced termination fallback; normal close/relaunch tests passed.
+- Added a port 8080 occupancy check to avoid launching a competing server; controlled conflict test passed.
+- Added PORT CONFLICT status for occupied port with no running ISSAC-managed AI process; verified recovery after releasing the port.
+- Added live elapsed analysis timing, most recent successful duration in the document list, and simultaneous total/cancellation timers.
+- Confirmed analysis and cancellation timing through manual tests. Successful duration data currently lives only in memory.
+
 ### Session Management
 
 - Implemented Clear Session confirmation.
@@ -785,14 +802,12 @@ Avoid introducing major new systems until the current foundation is sufficiently
 
 ### Priority 1 — AI Reliability
 
-1. Ensure the AI health monitor operates even if the initial server launch fails.
-2. Prevent analysis requests when the AI server is not ready.
-3. Add startup timeout and unresponsive-server handling.
-4. Improve Restart AI button behavior during startup.
-5. Move initial AI startup off the JavaFX Application Thread.
-6. Verify AI process shutdown and cleanup.
-7. Investigate port conflicts and external llama.cpp processes.
-8. Remove obsolete readiness-monitoring code.
+1. Add startup timeout and unresponsive-server handling.
+2. Improve Restart AI button behavior during startup.
+3. Move initial AI startup off the JavaFX Application Thread.
+4. Test abnormal termination and orphaned server recovery.
+5. Determine safe behavior for externally started AI servers without trusting an unknown port occupant.
+6. Remove obsolete readiness-monitoring code.
 
 ### Priority 2 — Document and Analysis Reliability
 
@@ -808,12 +823,15 @@ Completed this session: deletion protection during analysis, per-document status
 
 ### Priority 3 — Analysis Management
 
-1. Design support for multiple analyses per document.
-2. Introduce unique analysis identifiers.
-3. Add analysis timestamps.
-4. Add analysis history.
-5. Support different analysis types and prompts.
-6. Allow analysts to select previously generated analyses.
+1. Clear stale in-memory duration records when analyses/documents are cleared, deleted, or overwritten.
+2. Persist measured durations and analysis timestamps for future sessions.
+3. Develop conservative, clearly labeled estimated remaining times using historical data.
+4. Evaluate cancellation estimates separately; elapsed cancellation time remains authoritative.
+5. Design support for multiple analyses per document.
+6. Introduce unique analysis identifiers.
+7. Add analysis history.
+8. Support different analysis types and prompts.
+9. Allow analysts to select previously generated analyses.
 
 ### Priority 4 — Architectural Preparation
 
@@ -878,13 +896,13 @@ Begin with model evaluation, task-specific datasets, and small-scale experiments
 
 - The current AI runtime and model locations are hardcoded.
 - Initial model startup occurs on the JavaFX Application Thread.
-- AI readiness is monitored, but analysis requests are not yet blocked until the model is ready.
+- Analysis requests check model readiness; startup and health-check race conditions still need edge-case testing.
 - A running AI process may become unresponsive without terminating.
 - The current status monitor may classify an unresponsive server as STARTING.
-- AI startup failure may leave health monitoring inactive.
-- Port conflicts with externally launched servers are not fully handled.
+- Initial startup failure now leaves health monitoring active; automatic restart is not implemented.
+- Port occupancy is detected and reported, but ISSAC does not identify or adopt externally launched servers.
 - The Restart AI button is re-enabled after process launch, not confirmed model readiness.
-- AI shutdown behavior requires additional edge-case testing.
+- Normal AI shutdown has passed manual tests; forced application termination and crash recovery still need testing.
 
 ### Document Processing
 
@@ -898,6 +916,8 @@ Begin with model evaluation, task-specific datasets, and small-scale experiments
 
 - Cancellation confirms that ISSAC's task worker finished; it does not establish immediate termination of llama.cpp server-side generation.
 - Only one saved analysis is supported per document.
+- Successful analysis durations are held in memory only and are not yet cleared consistently when analyses or documents are removed.
+- Estimated remaining times are not implemented; only elapsed times are measured.
 - Analysis history is not implemented.
 - Custom analysis prompts are not yet available.
 - Source-level evidence validation is not implemented.
@@ -918,7 +938,7 @@ Begin with model evaluation, task-specific datasets, and small-scale experiments
 
 **Finish Phase 2 reliability work before introducing major Phase 3 capabilities.**
 
-The immediate focus is AI readiness enforcement, startup recovery, improved error handling, and reliable document lifecycle management. The October 11 session completed cancellation UX and validated simulated analysis-failure recovery; AI startup and server-side cancellation behavior still require testing.
+The October 13 session verified normal AI shutdown, startup port-conflict handling, status reporting, and recovery from a simulated initial startup failure. It also added elapsed analysis timing and combined cancellation timing. Next, clean up duration metadata, persist timing measurements, and introduce cautious time estimates while continuing startup edge-case and document lifecycle testing.
 
 Once these are stable, begin designing analysis history and multiple analyses per document.
 
