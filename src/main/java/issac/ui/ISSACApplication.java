@@ -39,6 +39,7 @@ public class ISSACApplication extends Application {
     private final TextArea analysisDisplay = new TextArea();
     private final Map<String, String> analyses = new HashMap<>();
     private final Map<String, String> analysisErrors = new HashMap<>();
+    private final Map<String, Long> analysisDurations = new HashMap<>();
     private boolean analysisRunning = false;
     private Label aiStatusLabel;
     private Button restartAIButton = new Button("Restart AI");
@@ -51,6 +52,8 @@ public class ISSACApplication extends Application {
     private Timeline cancellationTimer;
     private String recentlyCancelledDocument = null;
     private PauseTransition cancellationConfirmation;
+    private long analysisStartTime = 0;
+    private Timeline analysisTimer;
 
     @Override
     public void start(Stage primaryStage) {
@@ -60,15 +63,13 @@ public class ISSACApplication extends Application {
 
         try {
             modelServer.startServer();
-
-            // Begin checking whether Qwen is ready.
-            monitorAIStatus();
-
         } catch (IOException e) {
-
             updateAIStatus("OFFLINE");
 
             System.err.println("Unable to start Qwen: " + e.getMessage());
+        } finally {
+            // Begin checking whether Qwen is ready.
+            monitorAIStatus();
         }
 
         try {
@@ -149,18 +150,41 @@ public class ISSACApplication extends Application {
 
                     if (cancellationRequested) {
 
-                        long elapsedSeconds =
-                                (System.nanoTime() - cancellationStartTime)
-                                        / 1_000_000_000L;
+                        long now = System.nanoTime();
+
+                        long totalSeconds =
+                                (now - analysisStartTime) / 1_000_000_000L;
+
+                        long cancellationSeconds =
+                                (now - cancellationStartTime) / 1_000_000_000L;
 
                         statusLabel.setText(
-                                "◌ Cancelling... " + elapsedSeconds + "s"
+                                String.format(
+                                        "◌ Cancelling... Total: %02d:%02d | Cancel: %02d:%02d",
+                                        totalSeconds / 60,
+                                        totalSeconds % 60,
+                                        cancellationSeconds / 60,
+                                        cancellationSeconds % 60
+                                )
                         );
 
                     } else {
 
-                        statusLabel.setText("◌ Analyzing...");
-                    }
+                    long elapsedSeconds =
+                            (System.nanoTime() - analysisStartTime)
+                                    / 1_000_000_000L;
+
+                    long minutes = elapsedSeconds / 60;
+                    long seconds = elapsedSeconds % 60;
+
+                    statusLabel.setText(
+                            String.format(
+                                    "◌ Analyzing... %02d:%02d",
+                                    minutes,
+                                    seconds
+                            )
+                    );
+                }
 
                     row.getChildren().addAll(documentLabel, statusLabel);
 
@@ -192,7 +216,25 @@ public class ISSACApplication extends Application {
 
                 } else if (analyses.containsKey(documentName)) {
 
-                    statusLabel.setText("✓ Analyzed");
+                    Long duration = analysisDurations.get(documentName);
+
+                    if (duration != null) {
+
+                        long minutes = duration / 60;
+                        long seconds = duration % 60;
+
+                        statusLabel.setText(
+                                String.format(
+                                        "✓ Analyzed in %02d:%02d",
+                                        minutes,
+                                        seconds
+                                )
+                        );
+
+                    } else {
+
+                        statusLabel.setText("✓ Analyzed");
+                    }
                     row.getChildren().addAll(documentLabel, statusLabel);
 
                 } else {
@@ -432,6 +474,20 @@ public class ISSACApplication extends Application {
         analysisOutcomeHandled = false;
         analyzingDocument = selectedDocument;
 
+        // Start measuring total analysis time.
+        analysisStartTime = System.nanoTime();
+
+        analysisTimer = new Timeline(
+                new KeyFrame(Duration.seconds(1), event -> {
+                    if (analysisRunning) {
+                        documentList.refresh();
+                    }
+                })
+        );
+
+        analysisTimer.setCycleCount(Timeline.INDEFINITE);
+        analysisTimer.play();
+
         documentList.refresh();
 
         // Runs on the JavaFX Application Thread after the task succeeds.
@@ -440,6 +496,13 @@ public class ISSACApplication extends Application {
             if (cancellationRequested || analysisTask.isCancelled()) {
                 return;
             }
+
+            // Record how long the successful analysis took.
+            long elapsedSeconds =
+                    (System.nanoTime() - analysisStartTime)
+                            / 1_000_000_000L;
+
+            analysisDurations.put(selectedDocument, elapsedSeconds);
 
             // Clear any previous analysis error for this document.
             analysisErrors.remove(selectedDocument);
@@ -813,6 +876,12 @@ public class ISSACApplication extends Application {
                 );
                 break;
 
+            case "PORT CONFLICT":
+                aiStatusLabel.setStyle(
+                        "-fx-text-fill: #B8860B; -fx-font-weight: bold;"
+                );
+                break;
+
             default:
                 aiStatusLabel.setStyle(
                         "-fx-text-fill: red; -fx-font-weight: bold;"
@@ -840,6 +909,10 @@ public class ISSACApplication extends Application {
 
                     status = "STARTING";
 
+                } else if (modelServer.isPortOccupied()) {
+
+                    status = "PORT CONFLICT";
+
                 } else {
 
                     status = "OFFLINE";
@@ -862,6 +935,14 @@ public class ISSACApplication extends Application {
     }
 
     private void finishAnalysisTask() {
+
+        // Stop the analysis stopwatch.
+        if (analysisTimer != null) {
+            analysisTimer.stop();
+            analysisTimer = null;
+        }
+
+        analysisStartTime = 0;
 
         // Remember whether this analysis was cancelled before resetting its state.
         boolean wasCancelled = cancellationRequested;

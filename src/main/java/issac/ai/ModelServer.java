@@ -7,6 +7,9 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
+import java.util.concurrent.TimeUnit;
+import java.net.InetSocketAddress;
+import java.net.Socket;
 
 public class ModelServer {
 
@@ -18,6 +21,15 @@ public class ModelServer {
         if (isServerRunning()) {
             System.out.println("Qwen is already running. Skipping startup.");
             return;
+        }
+
+        // Checks if Port 8080 is occupied.
+        if (isPortOccupied()) {
+
+            throw new IOException(
+                    "Port 8080 is already occupied. "
+                            + "ISSAC will not launch another AI server."
+            );
         }
 
         Path serverDirectory = Path.of("C:", "ISSAC", "llama");
@@ -49,11 +61,63 @@ public class ModelServer {
         return serverProcess != null && serverProcess.isAlive();
     }
 
-    public void stopServer() {
+    public boolean isPortOccupied() {
 
-        if (serverProcess != null && serverProcess.isAlive()) {
-            serverProcess.destroy();
+        try (Socket socket = new Socket()) {
+
+            socket.connect(
+                    new InetSocketAddress("127.0.0.1", 8080),
+                    500
+            );
+
+            return true;
+
+        } catch (IOException e) {
+
+            return false;
         }
+    }
+
+    public synchronized void stopServer() {
+
+        if (serverProcess == null) {
+            return;
+        }
+
+        if (serverProcess.isAlive()) {
+
+            System.out.println("Stopping ISSAC's Qwen server...");
+
+            serverProcess.destroy();
+
+            try {
+
+                // Give Qwen up to 3 seconds to shut down normally.
+                boolean stopped = serverProcess.waitFor(
+                        3, TimeUnit.SECONDS
+                );
+
+                if (!stopped) {
+
+                    System.out.println(
+                            "Qwen did not stop normally. Forcing shutdown."
+                    );
+
+                    serverProcess.destroyForcibly();
+
+                    // Confirm the forced shutdown has completed.
+                    serverProcess.waitFor();
+                }
+
+            } catch (InterruptedException e) {
+
+                Thread.currentThread().interrupt();
+
+                serverProcess.destroyForcibly();
+            }
+        }
+
+        serverProcess = null;
     }
 
     public boolean isServerReady() {
