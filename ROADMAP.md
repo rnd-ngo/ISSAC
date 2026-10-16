@@ -124,9 +124,17 @@ requiring the rest of ISSAC to be redesigned.
 - [x] Display elapsed cancellation time and brief completion confirmation
 - [x] Display live analysis elapsed time and the latest successful analysis duration
 - [x] Display total analysis time alongside cancellation elapsed time
-- [ ] Persist analysis durations across application restarts
-- [ ] Remove stale analysis-duration metadata when analyses or documents are cleared, deleted, or overwritten
-- [ ] Develop clearly labeled estimated remaining analysis time from historical measurements
+- [ ] Restore latest per-document completed-duration display across application restarts (historical timing records already persist separately)
+- [x] Remove stale in-memory analysis-duration metadata when analyses or documents are cleared, deleted, or overwritten
+- [x] Implement historical timing records, disk persistence, startup reload, and size/model-aware duration estimation
+- [x] Capture successful analysis durations and input character counts; show labeled remaining-time estimates when sufficient history exists
+- [ ] Fix status-label layout so estimated remaining time is fully visible
+- [ ] Validate estimated countdown and estimate-exceeded behavior with controlled test data
+- [ ] Evaluate prediction accuracy against real analysis durations and refine comparability criteria
+- [ ] Rename timing history file from `.csv` to `.tsv` with a safe migration plan
+- [ ] Move timing history to a configurable, portable application data location
+- [ ] Improve timing-history corruption recovery, validation, and long-term retention strategy
+- [ ] Derive timing model identifier from actual model configuration rather than a hardcoded string
 - [ ] Evaluate cancellation-time estimates only after collecting sufficient timing data
 - [x] Wait for background worker completion before releasing the analysis lock
 - [x] Verify recovery from a simulated AI analysis failure
