@@ -1,5 +1,8 @@
 package issac.ui;
 
+import issac.analysis.AnalysisTimeEstimator;
+import issac.analysis.AnalysisTimingRecord;
+import issac.analysis.AnalysisTimingStore;
 import javafx.application.Platform;
 import javafx.scene.control.*;
 import javafx.stage.FileChooser;
@@ -16,9 +19,11 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import issac.analysis.AnalysisStore;
 import java.nio.file.StandardCopyOption;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
 import issac.document.DocRead;
 import issac.ai.LocalModel;
 import javafx.concurrent.Task;
@@ -34,6 +39,7 @@ public class ISSACApplication extends Application {
     private final DocRead reader = new DocRead();
     private final ListView<String> documentList = new ListView<>();
     private final AnalysisStore analysisStore = new AnalysisStore();
+    private final AnalysisTimingStore analysisTimingStore = new AnalysisTimingStore();
     private final LocalModel model = new LocalModel();
     private final ModelServer modelServer = new ModelServer();
     private final TextArea analysisDisplay = new TextArea();
@@ -53,7 +59,9 @@ public class ISSACApplication extends Application {
     private String recentlyCancelledDocument = null;
     private PauseTransition cancellationConfirmation;
     private long analysisStartTime = 0;
+    private long estimatedAnalysisDurationMillis = -1;
     private Timeline analysisTimer;
+    private final AnalysisTimeEstimator analysisTimeEstimator = new AnalysisTimeEstimator();
 
     @Override
     public void start(Stage primaryStage) {
@@ -70,6 +78,23 @@ public class ISSACApplication extends Application {
         } finally {
             // Begin checking whether Qwen is ready.
             monitorAIStatus();
+        }
+
+        // Restore historical analysis timing measurements.
+        try {
+            analysisTimingStore.loadRecords();
+
+            System.out.println(
+                    "Loaded "
+                            + analysisTimingStore.getRecords().size()
+                            + " analysis timing records."
+            );
+
+        } catch (IOException e) {
+            System.err.println(
+                    "Failed to load analysis timing history: "
+                            + e.getMessage()
+            );
         }
 
         try {
@@ -177,13 +202,41 @@ public class ISSACApplication extends Application {
                     long minutes = elapsedSeconds / 60;
                     long seconds = elapsedSeconds % 60;
 
-                    statusLabel.setText(
-                            String.format(
-                                    "◌ Analyzing... %02d:%02d",
-                                    minutes,
-                                    seconds
-                            )
+                    // Build the normal elapsed-time display first.
+                    String statusText = String.format(
+                            "◌ Analyzing... %02d:%02d",
+                            minutes,
+                            seconds
                     );
+
+                    // Append an estimate only when sufficient history exists.
+                    if (estimatedAnalysisDurationMillis >= 0) {
+
+                        long estimatedTotalSeconds =
+                                estimatedAnalysisDurationMillis / 1000L;
+
+                        if (elapsedSeconds < estimatedTotalSeconds) {
+
+                            long remainingSeconds =
+                                    estimatedTotalSeconds - elapsedSeconds;
+
+                            long remainingMinutes = remainingSeconds / 60;
+                            long remainingSecondsPart = remainingSeconds % 60;
+
+                            statusText += String.format(
+                                    " | Est. remaining: ~%02d:%02d",
+                                    remainingMinutes,
+                                    remainingSecondsPart
+                            );
+
+                        } else {
+
+                            statusText += " | Estimate exceeded";
+                        }
+                    }
+
+                    // Update the label once, with the complete message.
+                    statusLabel.setText(statusText);
                 }
 
                     row.getChildren().addAll(documentLabel, statusLabel);
@@ -336,6 +389,7 @@ public class ISSACApplication extends Application {
 
             // Remove any previous analysis error.
             analysisErrors.remove(selectedDocument);
+            analysisDurations.remove(selectedDocument);
 
             // Update the interface only after successful deletion.
             analysisDisplay.setText("This document has not been analyzed yet.");
@@ -397,6 +451,9 @@ public class ISSACApplication extends Application {
             recentlyCancelledDocument = null;
         }
 
+        // Holds the input size measured by the background task.
+        AtomicInteger inputCharacterCount = new AtomicInteger(0);
+
         // Create a background job that will eventually return a String.
         Task<String> analysisTask = new Task<>() {
 
@@ -405,6 +462,37 @@ public class ISSACApplication extends Application {
 
                 // Retrieve the processed text using the selected document's name.
                 String documentText = reader.readFile(selectedDocument);
+
+                inputCharacterCount.set(documentText.length());
+
+                // Notify the JavaFX thread once the document size is known.
+                Platform.runLater(() -> {
+
+                    if (!analysisRunning
+                            || !selectedDocument.equals(analyzingDocument)
+                            || cancellationRequested) {
+                        return;
+                    }
+
+                    long estimatedMillis = estimateAnalysisDuration(
+                            inputCharacterCount.get()
+                    );
+
+                    estimatedAnalysisDurationMillis = estimatedMillis;
+
+                    if (estimatedMillis >= 0) {
+                        System.out.println(
+                                "Estimated total analysis time: "
+                                        + estimatedMillis / 1000
+                                        + " seconds."
+                        );
+                    } else {
+                        System.out.println(
+                                "Analysis time estimate unavailable: "
+                                        + "insufficient comparable history."
+                        );
+                    }
+                });
 
                 // Give Qwen instructions along with the document's contents.
                 String prompt =
@@ -477,6 +565,9 @@ public class ISSACApplication extends Application {
         // Start measuring total analysis time.
         analysisStartTime = System.nanoTime();
 
+        // Each new analysis starts without a prediction.
+        estimatedAnalysisDurationMillis = -1;
+
         analysisTimer = new Timeline(
                 new KeyFrame(Duration.seconds(1), event -> {
                     if (analysisRunning) {
@@ -498,11 +589,30 @@ public class ISSACApplication extends Application {
             }
 
             // Record how long the successful analysis took.
-            long elapsedSeconds =
+            long elapsedMillis =
                     (System.nanoTime() - analysisStartTime)
-                            / 1_000_000_000L;
+                            / 1_000_000L;
+
+            long elapsedSeconds = elapsedMillis / 1000L;
 
             analysisDurations.put(selectedDocument, elapsedSeconds);
+
+            // Preserve the measurement for future estimates.
+            AnalysisTimingRecord timingRecord = new AnalysisTimingRecord(
+                    selectedDocument,
+                    inputCharacterCount.get(),
+                    elapsedMillis,
+                    Instant.now(),
+                    "Qwen3.5-0.8B"
+            );
+
+            try {
+                analysisTimingStore.saveRecord(timingRecord);
+            } catch (IOException e) {
+                System.err.println(
+                        "Failed to save timing record: " + e.getMessage()
+                );
+            }
 
             // Clear any previous analysis error for this document.
             analysisErrors.remove(selectedDocument);
@@ -620,6 +730,7 @@ public class ISSACApplication extends Application {
 
             // Remove the analysis from the in-memory cache as well.
             analyses.remove(selectedDocument);
+            analysisDurations.remove(selectedDocument);
 
         } catch (IOException e) {
             System.out.println("Delete failed: " + e.getMessage());
@@ -634,6 +745,7 @@ public class ISSACApplication extends Application {
             analysisStore.clearAllAnalyses();
 
             analyses.clear();
+            analysisDurations.clear();
             documentList.getItems().clear();
             analysisDisplay.clear();
 
@@ -817,6 +929,7 @@ public class ISSACApplication extends Application {
 
         // Only clear the in-memory result after disk cleanup succeeds.
         analyses.remove(documentName);
+        analysisDurations.remove(documentName);
     }
 
     private void restartAI() {
@@ -1049,6 +1162,16 @@ public class ISSACApplication extends Application {
 
         cancellationTimer.setCycleCount(Timeline.INDEFINITE);
         cancellationTimer.play();
+    }
+
+    private long estimateAnalysisDuration(
+            int inputCharacterCount
+    ) {
+        return analysisTimeEstimator.estimateDuration(
+                analysisTimingStore.getRecords(),
+                inputCharacterCount,
+                "Qwen3.5-0.8B"
+        );
     }
 
     private void checkAnalysisCompletion() {
