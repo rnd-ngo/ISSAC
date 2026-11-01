@@ -638,6 +638,25 @@ Possible future areas:
 - Model fine-tuning
 - Custom machine-learning models
 
+## Deferred Enhancement — Interactive Source Document Review and Annotation
+
+**Priority:** Post-Alpha 0.1 / parking lot. Do not interrupt core reliability, structured analysis, or evidence/provenance work to implement this.
+
+**Goal:** Let analysts inspect the complete original document inside ISSAC, preserving the document's layout where feasible, and interact with source material directly.
+
+### Candidate capabilities
+
+- [ ] Display full original documents in a read-only viewer (begin with supported text/PDF formats; assess DOCX layout fidelity separately).
+- [ ] Select and highlight passages; later support selecting images, figures, and document regions.
+- [ ] Allow analysts to add, edit, and remove their own highlights, notes, and annotations.
+- [ ] Ask ISSAC questions about selected text, snippets, images, or regions, with relevant document context.
+- [ ] Link structured findings to verified supporting passages and navigate from a finding to its source.
+- [ ] Distinguish verified source quotations from model interpretations; mark missing or unverified evidence clearly.
+- [ ] Store annotations separately from original source files to preserve source integrity.
+- [ ] Retain offline-first operation and respect source access and handling requirements.
+
+**Prerequisites:** Stable document ingestion and persistence, reliable local inference, structured analysis, source-location metadata, and evidence verification. Treat this as an add-on after the core Alpha 0.1 experience is dependable.
+
 This section is expected to grow.
 
 Adding an idea here does **not** mean it must be implemented immediately.
